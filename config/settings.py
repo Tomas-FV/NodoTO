@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core',
     'AdminHub',
-    'UserHub',
+    'UsersHub',
 ]
 
 MIDDLEWARE = [
@@ -117,4 +118,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = os.getenv('DJANGO_STATIC_URL', '/static/')
+STATICFILES_DIRS = [
+    BASE_DIR / 'core' / 'static',
+]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
