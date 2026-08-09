@@ -4,8 +4,48 @@
 {% block title %} Home {% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <h1>Welcome to the Home Page</h1>
-        <p>This is the main content of the home page.</p>
+
+<!-- Hero -->
+<div class="home-hero">
+    <h1>NodoTO</h1>
+    <p>Una plataforma para terapeutas ocupacionales.</p>
+    <div class="home-hero-acciones">
+        <a class="btn-primario" href="{% url 'pautas' %}">Ver Pautas</a>
+        <a class="btn-secundario" href="{% url 'sobrenodoto' %}">Explorar</a>
     </div>
+</div>
+
+<!-- Cards de acceso rápido -->
+<div class="home-grid">
+
+    <a class="home-card" href="{% url 'pautas' %}">
+        <div class="home-card-icono">🧠</div>
+        <h5>Pautas de Evaluación</h5>
+        <p>Accede al catálogo completo de pautas clínicas estandarizadas.</p>
+        <span class="home-card-tag">VER CATÁLOGO →</span>
+    </a>
+
+    <a class="home-card" href="#">
+        <div class="home-card-icono">👤</div>
+        <h5>Usuarios</h5>
+        <p>Gestiona el historial clínico y las evaluaciones de tus usuarios.</p>
+        <span class="home-card-tag">PRÓXIMAMENTE</span>
+    </a>
+
+    <!-- <a class="home-card" href="#">
+        <div class="home-card-icono">📋</div>
+        <h5>Evaluaciones</h5>
+        <p>Aplica pautas y registra resultados con puntuación automática.</p>
+        <span class="home-card-tag">PRÓXIMAMENTE</span>
+    </a> -->
+
+    <a class="home-card" href="#">
+        <div class="home-card-icono">📊</div>
+        <h5>Reportes</h5>
+        <p>Genera informes clínicos listos para imprimir o compartir.</p>
+        <span class="home-card-tag">PRÓXIMAMENTE</span>
+    </a>
+
+</div>
+
 {% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Pautas {% endblock %}
+
+{% block content %}
+
+<div class="pautas-wrapper">
+
+    <h2 class="pautas-titulo">Catálogo de Pautas de NodoTO</h2>
+
+    <input class="pauta-buscador" type="text" placeholder="Buscar por nombre de pauta (ej, M-CHAT)..." />
+
+    <div class="pautas-filtros">
+        <button class="pauta-filtro">VGI</button>
+        <button class="pauta-filtro activo">Infanto-Juvenil</button>
+        <button class="pauta-filtro">Salud Mental</button>
+        <button class="pauta-filtro">Adulto Físico</button>
+    </div>
+
+    <p class="pautas-conteo">Mostrando 8 de 42 pautas</p>
+
+    <div class="pautas-grid">
+
+        {% for i in "12345678" %}
+        <div class="pauta-card">
+            <div class="pauta-card-header">
+                <div class="pauta-icono">🧠</div>
+                <div>
+                    <span class="pauta-categoria">INFANTO-JUVENIL</span>
+                    <h6 class="pauta-nombre">WISC-V (Escala de Inteligencia de Wechsler)</h6>
+                    <p class="pauta-subtitulo">Escala de Inteligencia de Wechsler</p>
+                </div>
+            </div>
+            <div class="pauta-meta">
+                <span>Edad: 20-30 meses</span>
+                <span>Tiempo est.: 10-15 min</span>
+                <span>Ítems: 20</span>
+            </div>
+            <p class="pauta-descripcion">Escala de inteligencia que determina el coeficiente intelectual en función de distintas áreas cognitivas.</p>
+            <div class="pauta-barra-wrap">
+                <div class="pauta-barra" style="width: 60%;"></div>
+            </div>
+            <div class="pauta-acciones">
+                <button class="btn-aplicar">Aplicar Ahora (con resultados automáticos)</button>
+                <button class="btn-detalle">Ver Detalle y Puntuación</button>
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+
+{% endblock %}
