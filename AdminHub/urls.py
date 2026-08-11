@@ -1,6 +1,6 @@
-from django.urls import path
-import AdminHub.views as AdminHub
+﻿from django.urls import path
+from . import views
 
 urlpatterns = [
-    
+    path('', views.dashboard_view, name='adminhub_view'),
 ]
