@@ -409,6 +409,195 @@ footer {
     background: var(--brand-light);
 }
 
+/* ── AdminHub Sidebar ─────────────────────────────────────── */
+body.admin-layout {
+    margin: 0;
+    padding-top: 0;
+    min-height: 100vh;
+    display: block;
+    background: #f8fafc;
+}
+
+body.admin-layout *,
+body.admin-layout *::before,
+body.admin-layout *::after {
+    box-sizing: border-box;
+}
+
+.admin-layout {
+    min-height: 100vh;
+    display: flex;
+    background: #f8fafc;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.admin-sidebar {
+    width: 260px;
+    min-height: 100vh;
+    background: #fff;
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.05);
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1030;
+}
+
+.sidebar-brand a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: #111;
+    font-weight: 700;
+}
+
+.sidebar-brand img {
+    height: 42px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 14px;
+    background: var(--brand-light);
+    padding: 6px;
+}
+
+.sidebar-toggle {
+    display: none;
+    width: 100%;
+    background: var(--brand);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.sidebar-link {
+    display: block;
+    color: var(--text-soft);
+    text-decoration: none;
+    padding: 0.8rem 1rem;
+    border-radius: 0.95rem;
+    transition: background 0.15s, color 0.15s;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+    background: var(--brand-light);
+    color: var(--brand);
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.admin-content {
+    margin-left: 260px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-left: 1rem;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 2rem 0;
+}
+
+.admin-header h1 {
+    margin: 0;
+    font-size: clamp(1.8rem, 2vw, 2.5rem);
+    line-height: 1.2;
+    color: #111827;
+}
+
+.admin-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.admin-subtitle {
+    color: var(--text-muted);
+    margin: 0.25rem 0 0;
+}
+
+.admin-main {
+    flex: 1;
+    padding: 1.5rem 2rem 2rem;
+}
+
+.admin-main > *:first-child {
+    margin-top: 0;
+}
+
+.admin-panel-overview {
+    max-width: var(--wrapper-width);
+}
+
+.admin-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-card);
+}
+
+.admin-footer {
+    padding: 1rem 2rem;
+    background: #fff;
+    border-top: 1px solid var(--border);
+    color: var(--text-subtle);
+}
+
+@media (max-width: 991px) {
+    .admin-layout {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        position: relative;
+        width: 100%;
+        min-height: auto;
+        box-shadow: none;
+        border-right: none;
+    }
+
+    .sidebar-toggle {
+        display: block;
+    }
+
+    .admin-content {
+        margin-left: 0;
+        padding-left: 0;
+    }
+
+    .admin-header,
+    .admin-main,
+    .admin-footer {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
 /* ── Sobre NodoTO ────────────────────────────────────────────── */
 .sobre-hero {
     text-align: center;
