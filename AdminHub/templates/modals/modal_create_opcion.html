@@ -1,0 +1,31 @@
+<div class="modal fade" id="modalCreateOpcion_{{ item.id }}" tabindex="-1" aria-labelledby="modalCreateOpcionLabel_{{ item.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'adminhub_opcion_create' pauta.id campo.id item.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalCreateOpcionLabel_{{ item.id }}">Nueva opción</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="opcion_etiqueta_{{ item.id }}">Etiqueta</label>
+            <input id="opcion_etiqueta_{{ item.id }}" type="text" name="etiqueta" class="form-control" placeholder="Ej: Nunca, A veces, Siempre" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="opcion_valor_{{ item.id }}">Valor / puntaje</label>
+            <input id="opcion_valor_{{ item.id }}" type="number" name="valor" class="form-control" value="0">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="opcion_orden_{{ item.id }}">Orden</label>
+            <input id="opcion_orden_{{ item.id }}" type="number" name="orden" class="form-control" value="1" min="1">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar opción</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -45,6 +45,12 @@
                         <a class="nav-link" href="{% url 'pautas' %}">Pautas</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link disabled" tabindex="-1" aria-disabled="true" href="#">Usuarios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link disabled" tabindex="-1" aria-disabled="true" href="#">Reportes</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{% url 'sobrenodoto' %}">Sobre NodoTO</a>
                     </li>
                     <li class="nav-item">
@@ -88,6 +94,30 @@
 
         {% endblock %}
     </main>
+
+    {% if messages %}
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+        {% for message in messages %}
+        <div class="toast align-items-center border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="4200">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2" style="background: #edf8f0; color: #1d4d36; border-radius: 12px;">
+                    <span class="fw-bold" style="font-size: 1.1rem;">✓</span>
+                    <span>{{ message }}</span>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <script>
+        document.querySelectorAll('.toast').forEach((toastEl) => {
+            const toast = new bootstrap.Toast(toastEl, { delay: 4200 });
+            toast.show();
+        });
+    </script>
+
     <footer class="text-center bg-body-tertiary">
         <!-- Grid container -->
         <div class="container pt-4">

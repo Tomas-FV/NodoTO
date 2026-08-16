@@ -1,0 +1,283 @@
+{% extends 'baseadmin.html' %}
+{% load static %}
+
+{% block title %}Detalle de pauta{% endblock %}
+{% block header_title %}{{ pauta.nombre }}{% endblock %}
+
+{% block header_actions %}
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreateCampo">Nuevo campo</button>
+    <a href="{% url 'adminhub_pautas' %}" class="btn btn-outline-secondary">Volver</a>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <span class="badge bg-primary-subtle text-primary mb-2">{{ pauta.categoria }}</span>
+                    <h4 class="mb-1">{{ pauta.nombre }}</h4>
+                    <p class="mb-0 text-muted">{{ pauta.descripcion|default:'Sin descripción' }}</p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-light text-dark border">{{ pauta.campos.count }} campos</span>
+                    <span class="badge bg-light text-dark border">{{ pauta.items.count }} ítems</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if pauta.campos.all %}
+        {% for campo in pauta.campos.all %}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center gap-3">
+                <h5 class="mb-0">{{ campo.nombre }}</h5>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditCampo_{{ campo.id }}">Editar</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalDeleteCampo_{{ campo.id }}">Eliminar</button>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateItem_{{ campo.id }}">Nuevo ítem</button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if campo.descripcion %}
+                    <p class="text-muted small mb-3">{{ campo.descripcion }}</p>
+                {% endif %}
+
+                {% if campo.items.all %}
+                    <div class="accordion" id="accordionItems_{{ campo.id }}">
+                        {% for item in campo.items.all %}
+                        <div class="accordion-item border rounded mb-2 overflow-hidden">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseItem_{{ item.id }}" aria-expanded="false">
+                                    <span class="d-flex justify-content-between align-items-center w-100 gap-3">
+                                        <span>{{ item.texto }}</span>
+                                        <span class="d-flex align-items-center gap-2 flex-wrap">
+                                            <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ item.tipo_respuesta|default:'Sin tipo' }}</span>
+                                            {% if item.obligatorio %}
+                                            <span class="badge bg-success-subtle text-success-emphasis">Obligatorio</span>
+                                            {% else %}
+                                            <span class="badge bg-light text-dark border">Opcional</span>
+                                            {% endif %}
+                                        </span>
+                                    </span>
+                                </button>
+                            </h2>
+                            <div id="collapseItem_{{ item.id }}" class="accordion-collapse collapse" data-bs-parent="#accordionItems_{{ campo.id }}">
+                                <div class="accordion-body">
+                                    <div class="d-flex justify-content-end gap-2 mb-3 flex-wrap">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditItem_{{ item.id }}">Editar</button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalDeleteItem_{{ item.id }}">Eliminar</button>
+                                        {% if item.tipo_respuesta and item.tipo_respuesta.clave in 'checkbox,escala_4' %}
+                                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateOpcion_{{ item.id }}">+ opción</button>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if item.opciones.all %}
+                                    <div class="d-flex flex-wrap gap-2 mb-2">
+                                        {% for opcion in item.opciones.all %}
+                                            <span class="badge bg-light text-dark border">{{ opcion.etiqueta }}: {{ opcion.valor }} pts</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <div class="text-muted small mb-2">Sin opciones de respuesta.</div>
+                                    {% endif %}
+
+                                    {% if item.opciones.all %}
+                                    <div class="list-group list-group-flush border rounded">
+                                        {% for opcion in item.opciones.all %}
+                                        <div class="list-group-item d-flex justify-content-between align-items-center gap-3 py-2">
+                                            <div><strong>{{ opcion.etiqueta }}</strong> — {{ opcion.valor }} pts</div>
+                                            <div class="d-flex gap-2">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditOpcion_{{ opcion.id }}">Editar</button>
+                                                <form method="post" action="{% url 'adminhub_opcion_delete' pauta.id campo.id item.id opcion.id %}" onsubmit="return confirm('¿Deseas eliminar esta opción?');">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm">Eliminar</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">Este campo no tiene ítems.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalEditCampo_{{ campo.id }}" tabindex="-1" aria-labelledby="modalEditCampoLabel_{{ campo.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'adminhub_campo_edit' pauta.id campo.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalEditCampoLabel_{{ campo.id }}">Editar campo</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Nombre del campo</label>
+                                <input type="text" name="nombre" class="form-control" value="{{ campo.nombre }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Descripción</label>
+                                <textarea name="descripcion" class="form-control" rows="3">{{ campo.descripcion }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Orden</label>
+                                <input type="number" name="orden" class="form-control" value="{{ campo.orden }}" min="1">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalDeleteCampo_{{ campo.id }}" tabindex="-1" aria-labelledby="modalDeleteCampoLabel_{{ campo.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'adminhub_campo_delete' pauta.id campo.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header border-0">
+                            <h5 class="modal-title" id="modalDeleteCampoLabel_{{ campo.id }}">Eliminar campo</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-0">¿Deseas eliminar el campo <strong>{{ campo.nombre }}</strong>? Se eliminarán también todos sus ítems y opciones asociadas.</p>
+                        </div>
+                        <div class="modal-footer border-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% for item in campo.items.all %}
+        <div class="modal fade" id="modalEditItem_{{ item.id }}" tabindex="-1" aria-labelledby="modalEditItemLabel_{{ item.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'adminhub_item_edit' pauta.id campo.id item.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalEditItemLabel_{{ item.id }}">Editar ítem</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Pregunta o ítem</label>
+                                <textarea name="texto" class="form-control" rows="3" required>{{ item.texto }}</textarea>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Tipo de respuesta</label>
+                                    <select name="tipo_respuesta" class="form-select">
+                                        <option value="">Sin tipo de respuesta</option>
+                                        {% for tipo in tipos_respuesta %}
+                                            <option value="{{ tipo.id }}" {% if item.tipo_respuesta and item.tipo_respuesta.id == tipo.id %}selected{% endif %}>{{ tipo.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Orden</label>
+                                    <input type="number" name="orden" class="form-control" value="{{ item.orden }}" min="1">
+                                </div>
+                            </div>
+                            <div class="mb-3 mt-3">
+                                <label class="form-label">Descripción</label>
+                                <textarea name="descripcion" class="form-control" rows="2">{{ item.descripcion }}</textarea>
+                            </div>
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="checkbox" name="obligatorio" {% if item.obligatorio %}checked{% endif %} id="edit_item_obligatorio_{{ item.id }}">
+                                <label class="form-check-label" for="edit_item_obligatorio_{{ item.id }}">Ítem obligatorio</label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalDeleteItem_{{ item.id }}" tabindex="-1" aria-labelledby="modalDeleteItemLabel_{{ item.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'adminhub_item_delete' pauta.id campo.id item.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header border-0">
+                            <h5 class="modal-title" id="modalDeleteItemLabel_{{ item.id }}">Eliminar ítem</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-0">¿Deseas eliminar el ítem <strong>{{ item.texto }}</strong>? También se borrarán sus opciones asociadas.</p>
+                        </div>
+                        <div class="modal-footer border-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% for opcion in item.opciones.all %}
+        <div class="modal fade" id="modalEditOpcion_{{ opcion.id }}" tabindex="-1" aria-labelledby="modalEditOpcionLabel_{{ opcion.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'adminhub_opcion_edit' pauta.id campo.id item.id opcion.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalEditOpcionLabel_{{ opcion.id }}">Editar opción</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Etiqueta</label>
+                                <input type="text" name="etiqueta" class="form-control" value="{{ opcion.etiqueta }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Valor / puntaje</label>
+                                <input type="number" name="valor" class="form-control" value="{{ opcion.valor }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Orden</label>
+                                <input type="number" name="orden" class="form-control" value="{{ opcion.orden }}" min="1">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endfor %}
+        {% endfor %}
+    {% else %}
+    <div class="alert alert-info">Esta pauta no tiene campos aún.</div>
+    {% endif %}
+
+    {% include 'modals/modal_create_campo.html' %}
+    {% for campo in pauta.campos.all %}
+        {% include 'modals/modal_create_item.html' with pauta=pauta campo=campo %}
+    {% endfor %}
+    {% for campo in pauta.campos.all %}
+        {% for item in campo.items.all %}
+            {% include 'modals/modal_create_opcion.html' with pauta=pauta campo=campo item=item %}
+        {% endfor %}
+    {% endfor %}
+</div>
+{% endblock %}

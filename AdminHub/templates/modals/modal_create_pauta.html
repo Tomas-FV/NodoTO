@@ -1,0 +1,76 @@
+<div class="modal fade" id="modalCreatePauta" tabindex="-1" aria-labelledby="modalCreatePautaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalCreatePautaLabel">Nueva pauta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" for="pauta_nombre">Nombre de la pauta</label>
+          <input type="text" id="pauta_nombre" name="nombre" class="form-control" placeholder="Ej: SPM-2" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="pauta_categoria_select">Categoría</label>
+          <select id="pauta_categoria_select" class="form-select" aria-label="Selecciona una categoría existente">
+            <option value="">Selecciona una categoría</option>
+            {% for categoria in categorias %}
+              <option value="{{ categoria.nombre }}">{{ categoria.nombre }}</option>
+            {% endfor %}
+            <option value="__nueva__">+ Añadir nueva categoría</option>
+          </select>
+        </div>
+
+        <div class="mb-3 d-none" id="campoCategoriaNuevaWrap">
+          <label class="form-label" for="pauta_categoria_nueva">Nueva categoría</label>
+          <input type="text" id="pauta_categoria_nueva" name="categoria_nueva" class="form-control" placeholder="Escribe la nueva categoría">
+        </div>
+
+        <input type="hidden" id="pauta_categoria" name="categoria" value="">
+
+        <div class="mb-3">
+          <label class="form-label" for="pauta_descripcion">Descripción</label>
+          <textarea id="pauta_descripcion" name="descripcion" class="form-control" rows="4" placeholder="Descripción breve de la pauta..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar pauta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const select = document.getElementById('pauta_categoria_select');
+    const inputHidden = document.getElementById('pauta_categoria');
+    const inputNueva = document.getElementById('pauta_categoria_nueva');
+    const wrapNueva = document.getElementById('campoCategoriaNuevaWrap');
+
+    if (!select || !inputHidden) return;
+
+    function syncCategoria() {
+      const selected = select.value;
+      const shouldCreateNew = selected === '__nueva__';
+      wrapNueva.classList.toggle('d-none', !shouldCreateNew);
+      inputHidden.value = shouldCreateNew ? '' : selected;
+      inputNueva.required = shouldCreateNew;
+      if (shouldCreateNew) {
+        inputNueva.focus();
+      }
+    }
+
+    select.addEventListener('change', syncCategoria);
+
+    document.getElementById('modalCreatePauta').addEventListener('submit', function () {
+      const selected = select.value;
+      if (selected === '__nueva__') {
+        inputHidden.value = (inputNueva.value || '').trim();
+      } else {
+        inputHidden.value = selected;
+      }
+    });
+  })();
+</script>

@@ -1,0 +1,31 @@
+<div class="modal fade" id="modalCreateCampo" tabindex="-1" aria-labelledby="modalCreateCampoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'adminhub_campo_create' pauta.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalCreateCampoLabel">Nuevo campo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="campo_nombre">Nombre del campo</label>
+            <input type="text" id="campo_nombre" name="nombre" class="form-control" placeholder="Ej: Social, Familiar, Individual" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="campo_descripcion">Descripción</label>
+            <textarea id="campo_descripcion" name="descripcion" class="form-control" rows="3" placeholder="Describe este bloque o sección de la pauta..."></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="campo_orden">Orden</label>
+            <input type="number" id="campo_orden" name="orden" class="form-control" value="1" min="1">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar campo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

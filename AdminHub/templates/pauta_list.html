@@ -1,0 +1,209 @@
+{% extends 'baseadmin.html' %}
+{% load static %}
+
+{% block title %}Pautas{% endblock %}
+{% block header_title %}Gestión de pautas{% endblock %}
+
+{% block header_actions %}
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreatePauta">Nueva pauta</button>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-8">
+                    <label class="form-label mb-1 small text-muted">Buscar pauta</label>
+                    <input id="pautaSearch" type="search" class="form-control" placeholder="Buscar por nombre, categoría o descripción...">
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="text-muted small mb-1">Resumen</div>
+                    <div class="fw-semibold">{{ pautas|length }} pautas</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4" id="pautaListContainer">
+        {% for pauta in pautas %}
+        <div class="col-12 pauta-card-item" data-search="{{ pauta.nombre|lower }} {{ pauta.categoria|lower }} {{ pauta.descripcion|lower }}">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body p-3 p-md-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3">
+                        <div class="flex-grow-1">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                <span class="badge bg-primary-subtle text-primary">{{ pauta.categoria }}</span>
+                                {% if pauta.campos.count %}
+                                <span class="badge bg-light text-dark border">{{ pauta.campos.count }} campos</span>
+                                {% endif %}
+                                {% if pauta.items.count %}
+                                <span class="badge bg-light text-dark border">{{ pauta.items.count }} ítems</span>
+                                {% endif %}
+                            </div>
+                            <h4 class="mb-1">{{ pauta.nombre }}</h4>
+                            <p class="text-muted mb-0">{{ pauta.descripcion|default:'Sin descripción' }}</p>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditPauta_{{ pauta.id }}">Editar</button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalDeletePauta_{{ pauta.id }}">Eliminar</button>
+                            <a href="{% url 'adminhub_pauta_detail' pauta.id %}" class="btn btn-outline-secondary btn-sm">Ver detalle</a>
+                        </div>
+                    </div>
+
+                    {% if pauta.campos.all %}
+                    <div class="accordion mt-4" id="accordionPauta_{{ pauta.id }}">
+                        {% for campo in pauta.campos.all %}
+                        <div class="accordion-item border rounded mb-2 overflow-hidden">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCampo_{{ campo.id }}" aria-expanded="false">
+                                    <span class="d-flex justify-content-between align-items-center w-100 gap-3">
+                                        <span>{{ campo.nombre }}</span>
+                                        <span class="badge bg-light text-dark border">{{ campo.items.count }} item{{ campo.items.count|pluralize:"s" }}</span>
+                                    </span>
+                                </button>
+                            </h2>
+                            <div id="collapseCampo_{{ campo.id }}" class="accordion-collapse collapse" data-bs-parent="#accordionPauta_{{ pauta.id }}">
+                                <div class="accordion-body p-0">
+                                    {% if campo.items.all %}
+                                    <div class="list-group list-group-flush">
+                                        {% for item in campo.items.all %}
+                                        <div class="list-group-item px-3 py-3">
+                                            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                                                <div class="fw-semibold">{{ item.texto }}</div>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ item.tipo_respuesta|default:'Sin tipo' }}</span>
+                                                    {% if item.opciones.count %}
+                                                    <span class="badge bg-light text-dark border">{{ item.opciones.count }} opc.</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <div class="p-3 text-muted small">Este campo aún no tiene ítems.</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="mt-4 text-muted small">Esta pauta todavía no tiene campos definidos.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">No hay pautas creadas todavía.</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<form method="post" action="{% url 'adminhub_pauta_create' %}">
+    {% csrf_token %}
+    {% include 'modals/modal_create_pauta.html' %}
+</form>
+
+{% for pauta in pautas %}
+<form method="post" action="{% url 'adminhub_pauta_edit' pauta.id %}">
+    {% csrf_token %}
+    <div class="modal fade" id="modalEditPauta_{{ pauta.id }}" tabindex="-1" aria-labelledby="modalEditPautaLabel_{{ pauta.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditPautaLabel_{{ pauta.id }}">Editar pauta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" class="form-control" name="nombre" value="{{ pauta.nombre }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Categoría</label>
+                        <select class="form-select categoria-select" name="categoria" data-current="{{ pauta.categoria }}" required>
+                            <option value="">Selecciona una categoría</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria.nombre }}" {% if categoria.nombre == pauta.categoria.nombre %}selected{% endif %}>{{ categoria.nombre }}</option>
+                            {% endfor %}
+                            <option value="__nueva__">+ Añadir nueva categoría</option>
+                        </select>
+                        <input type="text" class="form-control mt-2 categoria-nueva-input d-none" name="categoria_nueva" placeholder="Escribe la nueva categoría">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" name="descripcion" rows="4">{{ pauta.descripcion }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="modal fade" id="modalDeletePauta_{{ pauta.id }}" tabindex="-1" aria-labelledby="modalDeletePautaLabel_{{ pauta.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" action="{% url 'adminhub_pauta_delete' pauta.id %}">
+                {% csrf_token %}
+                <div class="modal-header border-0">
+                    <h5 class="modal-title" id="modalDeletePautaLabel_{{ pauta.id }}">Eliminar pauta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">¿Deseas eliminar la pauta <strong>{{ pauta.nombre }}</strong>? Esta acción también eliminará sus campos, ítems y opciones asociadas.</p>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+    const searchInput = document.getElementById('pautaSearch');
+    const pautaCards = document.querySelectorAll('.pauta-card-item');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            const term = this.value.trim().toLowerCase();
+
+            pautaCards.forEach(function (card) {
+                const hayCoincidencia = !term || card.dataset.search.includes(term);
+                card.style.display = hayCoincidencia ? '' : 'none';
+            });
+        });
+    }
+
+    document.querySelectorAll('.categoria-select').forEach(function (select) {
+        const nuevaInput = select.parentElement.querySelector('.categoria-nueva-input');
+        function syncCategoriaSelect() {
+            const shouldNew = select.value === '__nueva__';
+            if (nuevaInput) {
+                nuevaInput.classList.toggle('d-none', !shouldNew);
+                nuevaInput.required = shouldNew;
+                if (!shouldNew) {
+                    nuevaInput.value = '';
+                }
+            }
+            if (!shouldNew && select.name) {
+                select.setAttribute('name', 'categoria');
+            }
+        }
+
+        select.addEventListener('change', syncCategoriaSelect);
+        syncCategoriaSelect();
+    });
+</script>
+{% endblock %}
