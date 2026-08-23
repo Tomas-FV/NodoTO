@@ -8,6 +8,12 @@ urlpatterns = [
     path('pautas/<int:pauta_id>/', views.pauta_detail_view, name='adminhub_pauta_detail'),
     path('pautas/<int:pauta_id>/editar/', views.pauta_edit_view, name='adminhub_pauta_edit'),
     path('pautas/<int:pauta_id>/eliminar/', views.pauta_delete_view, name='adminhub_pauta_delete'),
+    path('pautas/<int:pauta_id>/versiones/crear/', views.version_create_view, name='adminhub_version_create'),
+    path('pautas/<int:pauta_id>/versiones/<int:version_id>/editar/', views.version_edit_view, name='adminhub_version_edit'),
+    path('pautas/<int:pauta_id>/versiones/<int:version_id>/eliminar/', views.version_delete_view, name='adminhub_version_delete'),
+    path('pautas/<int:pauta_id>/reglas/crear/', views.regla_create_view, name='adminhub_regla_create'),
+    path('pautas/<int:pauta_id>/reglas/<int:regla_id>/editar/', views.regla_edit_view, name='adminhub_regla_edit'),
+    path('pautas/<int:pauta_id>/reglas/<int:regla_id>/eliminar/', views.regla_delete_view, name='adminhub_regla_delete'),
 
     path('pautas/<int:pauta_id>/campos/crear/', views.campo_create_view, name='adminhub_campo_create'),
     path('pautas/<int:pauta_id>/campos/<int:campo_id>/editar/', views.campo_edit_view, name='adminhub_campo_edit'),

@@ -17,11 +17,17 @@
 
     <div class="pautas-grid">
         {% for pauta in pautas %}
-        <div class="pauta-card" data-categoria="{{ pauta.categoria|default:'Sin categoría' }}" data-search="{{ pauta.nombre|lower }} {{ pauta.descripcion|lower }} {{ pauta.categoria|lower }}">
+        <div class="pauta-card" data-categoria="{% for categoria in pauta.categorias.all %}{{ categoria.nombre }}{% if not forloop.last %}|{% endif %}{% empty %}{{ pauta.categoria|default:'Sin categoría' }}{% endfor %}" data-search="{{ pauta.nombre|lower }} {{ pauta.descripcion|lower }} {% for categoria in pauta.categorias.all %}{{ categoria.nombre|lower }} {% endfor %}">
             <div class="pauta-card-header">
                 <div class="pauta-icono">🧠</div>
                 <div>
-                    <span class="pauta-categoria">{{ pauta.categoria }}</span>
+                    <span class="pauta-categoria">
+                        {% for categoria in pauta.categorias.all %}
+                            {{ categoria.nombre }}{% if not forloop.last %} · {% endif %}
+                        {% empty %}
+                            {{ pauta.categoria }}
+                        {% endfor %}
+                    </span>
                     <h6 class="pauta-nombre">{{ pauta.nombre }}</h6>
                     <p class="pauta-subtitulo">{{ pauta.descripcion|default:'Pauta clínica' }}</p>
                 </div>
@@ -43,6 +49,70 @@
         </div>
         {% endfor %}
     </div>
+
+    {% if resultado %}
+    <div class="modal fade" id="modalResultadoEvaluacion" tabindex="-1" aria-labelledby="modalResultadoEvaluacionLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="modalResultadoEvaluacionLabel">Resultado de la evaluación</h5>
+                        <div class="small text-muted">{{ resultado.pauta.nombre }}{% if resultado.version %} · {{ resultado.version.nombre }}{% endif %}</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="result-summary mb-4">
+                        <span class="small text-muted d-block">Participante</span>
+                        <strong>{{ resultado.nombre_participante }}</strong>
+                        {% if resultado_modo == 'general' %}
+                        <div class="result-total mt-3">
+                            <span class="small text-muted d-block">Puntaje general</span>
+                            <strong>{{ resultado.puntaje_total }} puntos</strong>
+                        </div>
+                        {% elif resultado_modo == 'por_campo' %}
+                        <div class="result-total mt-3">
+                            <span class="small text-muted d-block">Modalidad</span>
+                            <strong>Resultado tabulado por campo</strong>
+                        </div>
+                        {% else %}
+                        <div class="result-total mt-3">
+                            <span class="small text-muted d-block">Modalidad</span>
+                            <strong>Evaluación sin puntuación automática</strong>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <h6 class="mb-3">Resultados por campo</h6>
+                    <div class="d-flex flex-column gap-3">
+                        {% for resultado_campo in resultado.resultados_campos.all %}
+                        <div class="border rounded p-3">
+                            <div class="d-flex justify-content-between align-items-start gap-3">
+                                <strong>{{ resultado_campo.campo.nombre|default:'Resultado general' }}</strong>
+                                <span class="badge bg-primary-subtle text-primary-emphasis">{{ resultado_campo.puntaje_obtenido }}{% if resultado_campo.puntaje_maximo %} / {{ resultado_campo.puntaje_maximo }}{% endif %}</span>
+                            </div>
+                            {% if resultado_campo.porcentaje is not None %}
+                                <div class="small text-muted mt-2">{{ resultado_campo.porcentaje|floatformat:2 }}%</div>
+                            {% endif %}
+                            {% if resultado_campo.etiqueta %}
+                                <div class="fw-semibold mt-2">{{ resultado_campo.etiqueta }}</div>
+                            {% endif %}
+                            {% if resultado_campo.interpretacion %}
+                                <p class="small text-muted mb-0 mt-1">{{ resultado_campo.interpretacion }}</p>
+                            {% endif %}
+                        </div>
+                        {% empty %}
+                        <p class="text-muted mb-0">No se generaron resultados por campo.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar resultado</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <script>
@@ -55,8 +125,11 @@
     function getCategorias() {
         const categorias = new Set();
         cards.forEach(card => {
-            const nombre = (card.dataset.categoria || '').trim();
-            if (nombre) categorias.add(nombre);
+            const nombres = (card.dataset.categoria || '').split('|');
+            nombres.forEach((nombre) => {
+                nombre = nombre.trim();
+                if (nombre) categorias.add(nombre);
+            });
         });
         return Array.from(categorias).sort((a, b) => a.localeCompare(b));
     }
@@ -84,9 +157,9 @@
         let visibles = 0;
 
         cards.forEach((card) => {
-            const categoria = (card.dataset.categoria || '').trim();
+            const categorias = (card.dataset.categoria || '').split('|').map((item) => item.trim());
             const texto = (card.dataset.search || '').toLowerCase();
-            const coincideCategoria = categoriaActiva === 'Todas' || categoria === categoriaActiva;
+            const coincideCategoria = categoriaActiva === 'Todas' || categorias.includes(categoriaActiva);
             const coincideTexto = !termino || texto.includes(termino);
             const visible = coincideCategoria && coincideTexto;
 
@@ -109,6 +182,11 @@
             const bsModal = new bootstrap.Modal(modal, { backdrop: true, keyboard: true });
             bsModal.show();
         }
+    }
+
+    const resultadoModal = document.getElementById('modalResultadoEvaluacion');
+    if (resultadoModal) {
+        new bootstrap.Modal(resultadoModal).show();
     }
 
     renderFiltros();

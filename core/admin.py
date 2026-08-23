@@ -4,6 +4,7 @@ from .models import (
     Paciente,
     categoriaPauta,
     Pauta,
+    VersionPauta,
     CampoPauta,
     TipoRespuesta,
     tipoItemPauta,
@@ -11,6 +12,8 @@ from .models import (
     OpcionRespuesta,
     Evaluacion,
     RespuestaEvaluacion,
+    ReglaTabulacion,
+    ResultadoCampo,
     membresia,
 )
 
@@ -37,10 +40,18 @@ class CategoriaPautaAdmin(admin.ModelAdmin):
 
 @admin.register(Pauta)
 class PautaAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'categoria', 'fecha_creacion')
+    list_display = ('nombre', 'categoria', 'modo_puntuacion', 'fecha_creacion')
     search_fields = ('nombre', 'descripcion', 'categoria__nombre')
     list_filter = ('categoria',)
     ordering = ('-fecha_creacion',)
+
+
+@admin.register(VersionPauta)
+class VersionPautaAdmin(admin.ModelAdmin):
+    list_display = ('pauta', 'nombre', 'edad_min', 'edad_max', 'modo_puntuacion', 'activa')
+    search_fields = ('pauta__nombre', 'nombre', 'descripcion')
+    list_filter = ('pauta', 'activa')
+    ordering = ('pauta__nombre', 'edad_min')
 
 
 @admin.register(CampoPauta)
@@ -64,7 +75,7 @@ class TipoItemPautaAdmin(admin.ModelAdmin):
 
 @admin.register(ItemPauta)
 class ItemPautaAdmin(admin.ModelAdmin):
-    list_display = ('texto', 'pauta', 'campo', 'tipo_respuesta', 'obligatorio', 'orden')
+    list_display = ('texto', 'pauta', 'campo', 'tipo_respuesta', 'modo_puntuacion', 'obligatorio', 'orden')
     search_fields = ('texto', 'descripcion', 'pauta__nombre', 'campo__nombre')
     list_filter = ('pauta', 'campo', 'tipo_respuesta', 'obligatorio')
 
@@ -78,7 +89,7 @@ class OpcionRespuestaAdmin(admin.ModelAdmin):
 
 @admin.register(Evaluacion)
 class EvaluacionAdmin(admin.ModelAdmin):
-    list_display = ('nombre_participante', 'pauta', 'terapeuta', 'estado', 'puntaje_total', 'fecha_completado')
+    list_display = ('nombre_participante', 'pauta', 'version', 'terapeuta', 'estado', 'puntaje_total', 'fecha_completado')
     search_fields = ('nombre_participante', 'pauta__nombre', 'terapeuta__username')
     list_filter = ('estado', 'pauta', 'terapeuta')
 
@@ -88,6 +99,20 @@ class RespuestaEvaluacionAdmin(admin.ModelAdmin):
     list_display = ('evaluacion', 'item', 'respuesta', 'valor')
     search_fields = ('respuesta', 'item__texto')
     list_filter = ('evaluacion__pauta', 'item')
+
+
+@admin.register(ReglaTabulacion)
+class ReglaTabulacionAdmin(admin.ModelAdmin):
+    list_display = ('pauta', 'version', 'campo', 'puntaje_minimo', 'puntaje_maximo', 'etiqueta', 'orden')
+    search_fields = ('pauta__nombre', 'etiqueta', 'interpretacion')
+    list_filter = ('pauta', 'version', 'campo')
+
+
+@admin.register(ResultadoCampo)
+class ResultadoCampoAdmin(admin.ModelAdmin):
+    list_display = ('evaluacion', 'campo', 'puntaje_obtenido', 'puntaje_maximo', 'porcentaje', 'etiqueta')
+    search_fields = ('evaluacion__nombre_participante', 'campo__nombre', 'etiqueta')
+    list_filter = ('evaluacion__pauta', 'campo', 'etiqueta')
 
 
 @admin.register(membresia)

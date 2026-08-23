@@ -33,8 +33,9 @@
         <div class="collapse d-lg-block" id="sidebarMenu">
             <nav class="sidebar-nav">
                 <a class="sidebar-link {% if request.resolver_match.url_name == 'adminhub_view' %}active{% endif %}" href="{% url 'adminhub_view' %}">Dashboard</a>
-                <a class="sidebar-link {% if request.resolver_match.url_name == 'usuariosadmin_view' %}active{% endif %}" href="#">Usuarios</a>
                 <a class="sidebar-link {% if request.resolver_match.url_name == 'adminhub_pautas' %}active{% endif %}" href="{% url 'adminhub_pautas' %}">Pautas</a>
+                <a class="sidebar-link {% if request.resolver_match.url_name == 'usuariosadmin_view' %}active{% endif %}" href="#">Usuarios</a>
+                <a class="sidebar-link {% if request.resolver_match.url_name == 'reportes_view' %}active{% endif %}" href="#">Reportes</a>
                 <a class="sidebar-link {% if request.resolver_match.url_name == 'configuracion_view' %}active{% endif %}" href="#">Configuración</a>
             </nav>
         </div>

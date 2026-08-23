@@ -1,0 +1,101 @@
+<div class="modal fade" id="modalCreateRegla" tabindex="-1" aria-labelledby="modalCreateReglaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'adminhub_regla_create' pauta.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalCreateReglaLabel">Nueva regla de tabulación</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          {{ regla_form.as_p }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar regla</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% for regla in reglas_tabulacion %}
+<div class="modal fade" id="modalEditRegla_{{ regla.id }}" tabindex="-1" aria-labelledby="modalEditReglaLabel_{{ regla.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'adminhub_regla_edit' pauta.id regla.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalEditReglaLabel_{{ regla.id }}">Editar regla de tabulación</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Versión</label>
+            <select name="version" class="form-select">
+              <option value="">Todas las versiones</option>
+              {% for version in pauta.versiones.all %}
+                <option value="{{ version.id }}" {% if regla.version_id == version.id %}selected{% endif %}>{{ version.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Campo</label>
+            <select name="campo" class="form-select">
+              <option value="">Resultado general</option>
+              {% for campo in pauta.campos.all %}
+                <option value="{{ campo.id }}" {% if regla.campo_id == campo.id %}selected{% endif %}>{{ campo.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Puntaje mínimo</label>
+              <input type="number" name="puntaje_minimo" class="form-control" value="{{ regla.puntaje_minimo }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Puntaje máximo</label>
+              <input type="number" name="puntaje_maximo" class="form-control" value="{{ regla.puntaje_maximo }}" required>
+            </div>
+          </div>
+          <div class="mb-3 mt-3">
+            <label class="form-label">Etiqueta del resultado</label>
+            <input type="text" name="etiqueta" class="form-control" value="{{ regla.etiqueta }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Interpretación</label>
+            <textarea name="interpretacion" class="form-control" rows="3">{{ regla.interpretacion }}</textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Orden</label>
+            <input type="number" name="orden" class="form-control" value="{{ regla.orden }}" min="0">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalDeleteRegla_{{ regla.id }}" tabindex="-1" aria-labelledby="modalDeleteReglaLabel_{{ regla.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'adminhub_regla_delete' pauta.id regla.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalDeleteReglaLabel_{{ regla.id }}">Eliminar regla</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">¿Deseas eliminar la regla <strong>{{ regla.etiqueta }}</strong>?</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">Eliminar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}

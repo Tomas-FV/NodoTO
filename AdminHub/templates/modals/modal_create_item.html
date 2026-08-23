@@ -27,6 +27,27 @@
               <input id="item_orden_{{ campo.id }}" type="number" name="orden" class="form-control" value="1" min="1">
             </div>
           </div>
+
+          <div class="mb-3 mt-3">
+            <label class="form-label" for="item_version_{{ campo.id }}">Versión</label>
+            <select id="item_version_{{ campo.id }}" name="version" class="form-select">
+              <option value="">Sin versión específica (pauta base)</option>
+              {% for version in pauta.versiones.all %}
+                <option value="{{ version.id }}">{{ version.nombre }} ({{ version.edad_min }}{% if version.edad_max %} - {{ version.edad_max }} años{% else %}+ años{% endif %})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="item_modo_puntuacion_{{ campo.id }}">Puntuación del ítem</label>
+            <select id="item_modo_puntuacion_{{ campo.id }}" name="modo_puntuacion" class="form-select">
+              {% for clave, nombre in item_score_modes %}
+                <option value="{{ clave }}">{{ nombre }}</option>
+              {% endfor %}
+            </select>
+            <div class="form-text">Texto no se puntúa automáticamente; número puede usar su valor directo.</div>
+          </div>
+
           <div class="mb-3 mt-3">
             <label class="form-label" for="item_descripcion_{{ campo.id }}">Descripción</label>
             <textarea id="item_descripcion_{{ campo.id }}" name="descripcion" class="form-control" rows="2" placeholder="Detalles adicionales del ítem"></textarea>
