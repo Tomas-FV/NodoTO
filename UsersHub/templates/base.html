@@ -57,31 +57,24 @@
 
                 <!-- Elementos derecha -->
                 <div class="d-flex align-items-center gap-3">
-                    <!-- Notificaciones -->
-                    <!-- <div class="dropdown">
-                        <a class="link-secondary dropdown-toggle" href="#"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge rounded-pill bg-danger">1</span>
-                        </a>
+                    {% if user.is_authenticated %}
+                    <div class="dropdown">
+                        <button class="btn btn-link nav-user-button dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="nav-user-avatar">{{ user.username|first|upper }}</span>
+                            <span class="d-none d-sm-inline">{{ user.username }}</span>
+                        </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">Sin notificaciones</a></li>
-                        </ul>
-                    </div> -->
-                    <!-- Avatar -->
-                    <!-- <div class="dropdown">
-                        <a class="dropdown-toggle d-flex align-items-center link-secondary" href="#"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="https://mdbcdn.b-cdn.net/img/new/avatars/2.webp"
-                                class="rounded-circle" height="30" alt="Avatar" loading="lazy" />
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">Mi perfil</a></li>
-                            <li><a class="dropdown-item" href="#">Configuración</a></li>
+                            <li><span class="dropdown-item-text small text-muted">Sesión iniciada</span></li>
+                            {% if user.is_staff %}
+                            <li><a class="dropdown-item" href="{% url 'adminhub_view' %}">Panel administrativo</a></li>
+                            {% endif %}
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#">Cerrar sesión</a></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
                         </ul>
-                    </div> -->
+                    </div>
+                    {% else %}
+                    <a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Iniciar sesión</a>
+                    {% endif %}
                 </div>
             </div>
         </div>

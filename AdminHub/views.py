@@ -1,7 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
 from core.models import Pauta, CampoPauta, ItemPauta, OpcionRespuesta, TipoRespuesta, categoriaPauta, VersionPauta, ReglaTabulacion
 from .forms import PautaForm, CampoPautaForm, ItemPautaForm, OpcionRespuestaForm, VersionPautaForm, ReglaTabulacionForm
+
+
+admin_required = user_passes_test(
+    lambda user: user.is_authenticated and user.is_staff,
+    login_url='login',
+)
 
 
 def ensure_default_tipos_respuesta():
@@ -44,6 +51,7 @@ def sync_item_response_schema(item):
         item.opciones.all().delete()
 
 
+@admin_required
 def dashboard_view(request):
     pautas = Pauta.objects.prefetch_related('campos__items__opciones').all()
     total_pautas = pautas.count()
@@ -63,6 +71,7 @@ def dashboard_view(request):
     return render(request, 'dashboard.html', context)
 
 
+@admin_required
 def pauta_list_view(request):
     pautas = Pauta.objects.prefetch_related('campos__items__opciones').all()
     return render(request, 'pauta_list.html', {
@@ -72,6 +81,7 @@ def pauta_list_view(request):
     })
 
 
+@admin_required
 def pauta_detail_view(request, pauta_id):
     ensure_default_tipos_respuesta()
     pauta = Pauta.objects.prefetch_related('versiones', 'campos__items__opciones').get(id=pauta_id)
@@ -99,6 +109,7 @@ def _regla_form_for_pauta(pauta, data=None, instance=None):
     return form
 
 
+@admin_required
 def regla_create_view(request, pauta_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     if request.method == 'POST':
@@ -113,6 +124,7 @@ def regla_create_view(request, pauta_id):
     return redirect('adminhub_pauta_detail', pauta_id=pauta.id)
 
 
+@admin_required
 def regla_edit_view(request, pauta_id, regla_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     regla = get_object_or_404(ReglaTabulacion, id=regla_id, pauta=pauta)
@@ -126,6 +138,7 @@ def regla_edit_view(request, pauta_id, regla_id):
     return redirect('adminhub_pauta_detail', pauta_id=pauta.id)
 
 
+@admin_required
 def regla_delete_view(request, pauta_id, regla_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     regla = get_object_or_404(ReglaTabulacion, id=regla_id, pauta=pauta)
@@ -135,6 +148,7 @@ def regla_delete_view(request, pauta_id, regla_id):
     return redirect('adminhub_pauta_detail', pauta_id=pauta.id)
 
 
+@admin_required
 def version_create_view(request, pauta_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     if request.method == 'POST':
@@ -150,6 +164,7 @@ def version_create_view(request, pauta_id):
     return redirect('adminhub_pauta_detail', pauta_id=pauta.id)
 
 
+@admin_required
 def version_edit_view(request, pauta_id, version_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     version = get_object_or_404(VersionPauta, id=version_id, pauta=pauta)
@@ -187,6 +202,7 @@ def _validate_version_range(form, pauta, current=None):
             form.add_error(None, f'El rango se superpone con la versión "{version.nombre}".')
 
 
+@admin_required
 def version_delete_view(request, pauta_id, version_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     version = get_object_or_404(VersionPauta, id=version_id, pauta=pauta)
@@ -196,6 +212,7 @@ def version_delete_view(request, pauta_id, version_id):
     return redirect('adminhub_pauta_detail', pauta_id=pauta.id)
 
 
+@admin_required
 def pauta_create_view(request):
     if request.method == 'POST':
         request.POST = _prepare_categories(request.POST)
@@ -212,6 +229,7 @@ def pauta_create_view(request):
     return redirect('adminhub_pautas')
 
 
+@admin_required
 def pauta_edit_view(request, pauta_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     if request.method == 'POST':
@@ -246,6 +264,7 @@ def _prepare_categories(data):
     return data
 
 
+@admin_required
 def pauta_delete_view(request, pauta_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     if request.method == 'POST':
@@ -254,6 +273,7 @@ def pauta_delete_view(request, pauta_id):
     return redirect('adminhub_pautas')
 
 
+@admin_required
 def campo_create_view(request, pauta_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     if request.method == 'POST':
@@ -269,6 +289,7 @@ def campo_create_view(request, pauta_id):
     return redirect('adminhub_pauta_detail', pauta_id=pauta.id)
 
 
+@admin_required
 def campo_edit_view(request, pauta_id, campo_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     campo = get_object_or_404(CampoPauta, id=campo_id, pauta=pauta)
@@ -283,6 +304,7 @@ def campo_edit_view(request, pauta_id, campo_id):
     return redirect('adminhub_pauta_detail', pauta_id=pauta.id)
 
 
+@admin_required
 def campo_delete_view(request, pauta_id, campo_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     campo = get_object_or_404(CampoPauta, id=campo_id, pauta=pauta)
@@ -292,6 +314,7 @@ def campo_delete_view(request, pauta_id, campo_id):
     return redirect('adminhub_pauta_detail', pauta_id=pauta.id)
 
 
+@admin_required
 def item_create_view(request, pauta_id, campo_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     campo = get_object_or_404(CampoPauta, id=campo_id, pauta=pauta)
@@ -310,6 +333,7 @@ def item_create_view(request, pauta_id, campo_id):
     return redirect('adminhub_pauta_detail', pauta_id=pauta.id)
 
 
+@admin_required
 def item_edit_view(request, pauta_id, campo_id, item_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     campo = get_object_or_404(CampoPauta, id=campo_id, pauta=pauta)
@@ -326,6 +350,7 @@ def item_edit_view(request, pauta_id, campo_id, item_id):
     return redirect('adminhub_pauta_detail', pauta_id=pauta.id)
 
 
+@admin_required
 def item_delete_view(request, pauta_id, campo_id, item_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     campo = get_object_or_404(CampoPauta, id=campo_id, pauta=pauta)
@@ -336,6 +361,7 @@ def item_delete_view(request, pauta_id, campo_id, item_id):
     return redirect('adminhub_pauta_detail', pauta_id=pauta.id)
 
 
+@admin_required
 def opcion_create_view(request, pauta_id, campo_id, item_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     campo = get_object_or_404(CampoPauta, id=campo_id, pauta=pauta)
@@ -357,6 +383,7 @@ def opcion_create_view(request, pauta_id, campo_id, item_id):
     return redirect('adminhub_pauta_detail', pauta_id=pauta.id)
 
 
+@admin_required
 def opcion_edit_view(request, pauta_id, campo_id, item_id, opcion_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     campo = get_object_or_404(CampoPauta, id=campo_id, pauta=pauta)
@@ -372,6 +399,7 @@ def opcion_edit_view(request, pauta_id, campo_id, item_id, opcion_id):
     return redirect('adminhub_pauta_detail', pauta_id=pauta.id)
 
 
+@admin_required
 def opcion_delete_view(request, pauta_id, campo_id, item_id, opcion_id):
     pauta = get_object_or_404(Pauta, id=pauta_id)
     campo = get_object_or_404(CampoPauta, id=campo_id, pauta=pauta)
