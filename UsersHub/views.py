@@ -2,14 +2,12 @@ from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from core.models import Pauta, Usuario, Evaluacion, RespuestaEvaluacion, ResultadoCampo, ReglaTabulacion
+from core.models import Pauta, Evaluacion, RespuestaEvaluacion, ResultadoCampo, ReglaTabulacion
 
 
-def home_view(request):
-    return render(request, 'index.html')
-
-
+@login_required
 def pautas_view(request):
     pautas = Pauta.objects.prefetch_related('versiones', 'campos__items__opciones').all()
     resultado = None
@@ -17,7 +15,7 @@ def pautas_view(request):
     if resultado_id:
         resultado = Evaluacion.objects.select_related('pauta', 'version').prefetch_related(
             'resultados_campos__campo'
-        ).filter(id=resultado_id).first()
+        ).filter(id=resultado_id, usuario=request.user).first()
     resultado_modo = _modo_puntuacion(resultado.pauta, resultado.version) if resultado else None
     return render(request, 'pautas.html', {
         'pautas': pautas,
@@ -47,6 +45,7 @@ def _puntaje_maximo_item(item):
     return None
 
 
+@login_required
 def evaluar_pauta_view(request, pauta_id):
     pauta = get_object_or_404(Pauta.objects.prefetch_related('versiones', 'campos__items__opciones'), id=pauta_id)
     edad = request.POST.get('edad')
@@ -71,16 +70,6 @@ def evaluar_pauta_view(request, pauta_id):
 
     nombre_participante = request.POST.get('nombre_participante', '').strip() or 'Participante sin nombre'
     observaciones = request.POST.get('observaciones', '').strip()
-
-    terapeuta = Usuario.objects.order_by('id').first()
-    if terapeuta is None:
-        terapeuta = Usuario.objects.create(
-            username='terapeuta_default',
-            run='11111111-1',
-            email='terapeuta@nodoto.local',
-            password='nodoto123',
-            rol='terapeuta',
-        )
 
     respuestas_a_guardar = []
     errores_validacion = []
@@ -154,7 +143,7 @@ def evaluar_pauta_view(request, pauta_id):
         })
 
     evaluacion = Evaluacion.objects.create(
-        terapeuta=terapeuta,
+        usuario=request.user,
         pauta=pauta,
         version=version,
         nombre_participante=nombre_participante,
@@ -207,5 +196,36 @@ def evaluar_pauta_view(request, pauta_id):
     return redirect(reverse('pautas'))
 
 
-def sobrenodoto_view(request):
-    return render(request, 'sobrenodoto.html')
+@login_required
+def mis_evaluaciones_view(request):
+    # cada usuario solo ve sus propias evaluaciones, nunca las de otros
+    evaluaciones = Evaluacion.objects.select_related('pauta', 'version').filter(
+        usuario=request.user
+    ).order_by('-fecha_creacion')
+    return render(request, 'mis_evaluaciones.html', {'evaluaciones': evaluaciones})
+
+
+@login_required
+def mi_evaluacion_detalle_view(request, evaluacion_id):
+    # get_object_or_404 con usuario=request.user impide ver evaluaciones de otros
+    evaluacion = get_object_or_404(
+        Evaluacion.objects.select_related('pauta', 'version'),
+        id=evaluacion_id,
+        usuario=request.user,
+    )
+    respuestas = evaluacion.respuestas.select_related('item', 'item__campo').order_by(
+        'item__campo__orden', 'item__orden'
+    )
+
+    campos = {}
+    for respuesta in respuestas:
+        campo = respuesta.item.campo
+        campos.setdefault(campo, []).append(respuesta)
+
+    resultados_campos = evaluacion.resultados_campos.select_related('campo').all()
+
+    return render(request, 'mi_evaluacion_detalle.html', {
+        'evaluacion': evaluacion,
+        'campos': campos.items(),
+        'resultados_campos': resultados_campos,
+    })

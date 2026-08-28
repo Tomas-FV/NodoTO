@@ -11,6 +11,12 @@ admin_required = user_passes_test(
 )
 
 
+@admin_required
+def preview_404_view(request):
+    # botón provisional para revisar la plantilla 404 personalizada
+    return render(request, '404.html', status=404)
+
+
 def ensure_default_tipos_respuesta():
     defaults = [
         ('checkbox', 'Checkbox', 'Selección múltiple'),

@@ -41,6 +41,7 @@
             <div class="collapse navbar-collapse" id="navbarContent">
                 <!-- Links izquierda -->
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'pautas' %}">Pautas</a>
                     </li>
@@ -50,9 +51,7 @@
                     <li class="nav-item">
                         <a class="nav-link disabled" tabindex="-1" aria-disabled="true" href="#">Reportes</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'sobrenodoto' %}">Sobre NodoTO</a>
-                    </li>
+                    {% endif %}
                 </ul>
 
                 <!-- Elementos derecha -->
@@ -63,8 +62,9 @@
                             <span class="nav-user-avatar">{{ user.username|first|upper }}</span>
                             <span class="d-none d-sm-inline">{{ user.username }}</span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
+                        <ul class="dropdown-menu dropdown-menu-lg-end">
                             <li><span class="dropdown-item-text small text-muted">Sesión iniciada</span></li>
+                            <li><a class="dropdown-item" href="{% url 'mis_evaluaciones' %}">Mis evaluaciones</a></li>
                             {% if user.is_staff %}
                             <li><a class="dropdown-item" href="{% url 'adminhub_view' %}">Panel administrativo</a></li>
                             {% endif %}

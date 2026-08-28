@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('', views.dashboard_view, name='adminhub_view'),
+    path('preview-404/', views.preview_404_view, name='adminhub_preview_404'),
     path('pautas/', views.pauta_list_view, name='adminhub_pautas'),
     path('pautas/crear/', views.pauta_create_view, name='adminhub_pauta_create'),
     path('pautas/<int:pauta_id>/', views.pauta_detail_view, name='adminhub_pauta_detail'),
