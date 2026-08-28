@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} NodoTO {% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<div class="sobre-hero">
+    <span class="sobre-eyebrow">Conoce el proyecto</span>
+    <h1>Tecnología al servicio<br>del terapeuta ocupacional</h1>
+    <p>NodoTO nació para que los profesionales dediquen más tiempo a sus pacientes<br>y menos a las tareas administrativas.</p>
+    <div class="home-hero-acciones">
+        {% if user.is_authenticated %}
+            <a class="btn-primario" href="{% url 'pautas' %}">Ver Pautas</a>
+            {% if user.is_staff %}
+                <a class="btn-secundario" href="{% url 'adminhub_view' %}">Ir al panel</a>
+            {% endif %}
+        {% else %}
+            <a class="btn-primario" href="{% url 'login' %}">Iniciar sesión</a>
+            <a class="btn-secundario" href="{% url 'register' %}">Crear cuenta</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Propósito -->
+<section class="sobre-section sobre-proposito">
+    <div class="sobre-wrapper">
+        <div class="sobre-texto-bloque">
+            <span class="sobre-label">Nuestro propósito</span>
+            <h2>Simplificar el trabajo clínico</h2>
+            <p>
+                NodoTO es una plataforma desarrollada para apoyar el trabajo diario de terapeutas ocupacionales
+                mediante herramientas digitales simples, seguras e intuitivas. Nuestro objetivo es reducir el tiempo
+                dedicado a tareas administrativas para que los profesionales puedan concentrarse en lo más importante:
+                <strong>la atención de sus pacientes</strong>.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Cards de valor -->
+<section class="sobre-section">
+    <div class="sobre-wrapper">
+        <h2 class="sobre-subtitulo-centrado">¿Qué ofrece NodoTO?</h2>
+        <div class="sobre-cards">
+            <div class="sobre-card">
+                <div class="sobre-card-icono">📋</div>
+                <h5>Pautas de evaluación</h5>
+                <p>Accede a un catálogo completo de pautas estandarizadas con puntuación automática y resultados inmediatos.</p>
+            </div>
+            <div class="sobre-card">
+                <div class="sobre-card-icono">👥</div>
+                <h5>Gestión de usuarios</h5>
+                <p>Organiza el historial clínico de cada usuario, sus evaluaciones y el seguimiento de su progreso.</p>
+                <span class="home-card-tag">PRÓXIMAMENTE</span>
+            </div>
+            <div class="sobre-card">
+                <div class="sobre-card-icono">🔒</div>
+                <h5>Seguridad y confiabilidad</h5>
+                <p>Tus datos y los de tus usuarios protegidos, accesibles desde cualquier dispositivo con conexión a internet.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Visión -->
+<section class="sobre-section sobre-vision">
+    <div class="sobre-wrapper sobre-vision-inner">
+        <div class="sobre-vision-texto">
+            <span class="sobre-label sobre-label-claro">Nuestra visión</span>
+            <h2>Un nodo para toda la comunidad TO</h2>
+            <p>
+                Nuestro proyecto nace con la visión de convertirse en una herramienta de apoyo para terapeutas
+                independientes, centros de atención y equipos multidisciplinarios, incorporando continuamente
+                nuevas funcionalidades basadas en las necesidades reales de la práctica clínica.
+            </p>
+            <p>
+                En NodoTO creemos que la tecnología debe <strong>facilitar el trabajo, no hacerlo más complejo</strong>.
+                Por eso desarrollamos soluciones enfocadas en la experiencia del profesional, priorizando la
+                simplicidad, la seguridad y la confiabilidad de los datos.
+            </p>
+        </div>
+        <div class="sobre-vision-cita">
+            <blockquote>
+                "La tecnología debe facilitar el trabajo, no hacerlo más complejo."
+            </blockquote>
+            <span class="sobre-cita-autor">— Equipo NodoTO</span>
+        </div>
+    </div>
+</section>
+
+<!-- CTA final -->
+<section class="sobre-section sobre-cta">
+    <div class="sobre-wrapper sobre-cta-inner">
+        <h2>¿Listo para empezar?</h2>
+        {% if user.is_authenticated %}
+            <p>Explora el catálogo de pautas y continúa con tu trabajo clínico.</p>
+            <div class="home-hero-acciones">
+                <a class="btn-primario" href="{% url 'pautas' %}">Ver Pautas</a>
+            </div>
+        {% else %}
+            <p>Crea tu cuenta o inicia sesión para acceder al catálogo de pautas.</p>
+            <div class="home-hero-acciones">
+                <a class="btn-primario" href="{% url 'register' %}">Crear cuenta</a>
+                <a class="btn-secundario" href="{% url 'login' %}">Iniciar sesión</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

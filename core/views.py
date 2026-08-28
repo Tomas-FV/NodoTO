@@ -3,6 +3,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
 
+from core.models import Usuario
+
+
+def landing_view(request):
+    return render(request, 'landing.html')
+
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -36,11 +42,12 @@ def register_view(request):
 
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
+        run = request.POST.get('run', '').strip()
         email = request.POST.get('email', '').strip()
         password = request.POST.get('password', '')
         password_confirmation = request.POST.get('password_confirmation', '')
 
-        if not username or not email or not password:
+        if not username or not run or not email or not password:
             messages.error(request, 'Completa todos los campos obligatorios.')
         elif password != password_confirmation:
             messages.error(request, 'Las contraseñas no coinciden.')
@@ -48,8 +55,11 @@ def register_view(request):
             messages.error(request, 'Ese nombre de usuario ya está registrado.')
         elif User.objects.filter(email=email).exists():
             messages.error(request, 'Ese correo ya está registrado.')
+        elif Usuario.objects.filter(run=run).exists():
+            messages.error(request, 'Ese RUT ya está registrado.')
         else:
             user = User.objects.create_user(username=username, email=email, password=password)
+            Usuario.objects.create(auth_user=user, username=username, run=run, email=email)
             login(request, user)
             return redirect('home')
 

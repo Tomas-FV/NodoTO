@@ -89,9 +89,9 @@ class OpcionRespuestaAdmin(admin.ModelAdmin):
 
 @admin.register(Evaluacion)
 class EvaluacionAdmin(admin.ModelAdmin):
-    list_display = ('nombre_participante', 'pauta', 'version', 'terapeuta', 'estado', 'puntaje_total', 'fecha_completado')
-    search_fields = ('nombre_participante', 'pauta__nombre', 'terapeuta__username')
-    list_filter = ('estado', 'pauta', 'terapeuta')
+    list_display = ('nombre_participante', 'usuario', 'pauta', 'version', 'estado', 'puntaje_total', 'fecha_completado')
+    search_fields = ('nombre_participante', 'pauta__nombre', 'usuario__username')
+    list_filter = ('estado', 'pauta', 'usuario')
 
 
 @admin.register(RespuestaEvaluacion)

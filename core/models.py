@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 class membresia(models.Model):
@@ -7,10 +8,11 @@ class membresia(models.Model):
     def __str__(self):
         return self.nombre
 class Usuario(models.Model):
+    auth_user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True, related_name='perfil_clinico')
     username = models.CharField(max_length=100)
     run = models.CharField(max_length=12, unique=True)
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=100)
+    password = models.CharField(max_length=100, blank=True)
     rol = models.CharField(max_length=20, choices=[('terapeuta', 'Terapeuta'), ('admin', 'Administrador')], default='terapeuta')
     membresia = models.ForeignKey(membresia, on_delete=models.SET_NULL, null=True, blank=True)
 
@@ -170,7 +172,8 @@ class OpcionRespuesta(models.Model):
         return f"{self.item} - {self.etiqueta} ({self.valor})"
 
 class Evaluacion(models.Model):
-    terapeuta = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='evaluaciones_realizadas')
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='evaluaciones', null=True, blank=True)
+    terapeuta = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='evaluaciones_realizadas', null=True, blank=True)
     pauta = models.ForeignKey(Pauta, on_delete=models.CASCADE, related_name='evaluaciones')
     version = models.ForeignKey(VersionPauta, on_delete=models.SET_NULL, null=True, blank=True, related_name='evaluaciones')
     paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE, null=True, blank=True, related_name='evaluaciones')
