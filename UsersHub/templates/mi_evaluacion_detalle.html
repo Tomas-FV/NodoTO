@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Detalle de evaluación {% endblock %}
+
+{% block content %}
+<div class="pautas-wrapper">
+    <a href="{% url 'mis_evaluaciones' %}" class="small">&larr; Volver a mis evaluaciones</a>
+    <h2 class="pautas-titulo mt-2">{{ evaluacion.pauta.nombre }}</h2>
+    <p class="text-muted mb-1">{{ evaluacion.version.nombre|default:'Pauta base' }}</p>
+    <div class="d-flex flex-wrap gap-2 text-muted small mb-3">
+        <span>Participante: <strong>{{ evaluacion.nombre_participante }}</strong></span>
+        <span>Fecha: {{ evaluacion.fecha_creacion|date:'d/m/Y H:i' }}</span>
+        <span>Puntaje total: <strong>{{ evaluacion.puntaje_total }}</strong></span>
+    </div>
+
+    {% if resultados_campos %}
+    <h5 class="mt-4">Resultados por campo</h5>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        {% for resultado in resultados_campos %}
+        <span class="badge bg-light text-dark border">
+            {{ resultado.campo.nombre|default:'General' }}: {{ resultado.puntaje_obtenido }}{% if resultado.puntaje_maximo %} / {{ resultado.puntaje_maximo }}{% endif %}
+            {% if resultado.etiqueta %} · {{ resultado.etiqueta }}{% endif %}
+        </span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <h5 class="mt-4">Respuestas y opciones marcadas</h5>
+    {% for campo, respuestas in campos %}
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header bg-white border-bottom">
+            <strong>{{ campo.nombre|default:'Sin campo' }}</strong>
+        </div>
+        <div class="list-group list-group-flush">
+            {% for respuesta in respuestas %}
+            <div class="list-group-item">
+                <div class="fw-semibold">{{ respuesta.item.texto }}</div>
+                <div class="text-muted small">Marcado: {{ respuesta.respuesta }}{% if respuesta.valor %} ({{ respuesta.valor }} pts){% endif %}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-info">Esta evaluación no tiene respuestas registradas.</div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Política de privacidad {% endblock %}
+
+{% block content %}
+<div class="sobre-hero">
+    <span class="sobre-eyebrow">Legal</span>
+    <h1>Política de privacidad</h1>
+    <p>Cómo NodoTO recopila, usa y protege tu información.</p>
+</div>
+
+<section class="sobre-section">
+    <div class="sobre-wrapper" style="max-width: 780px;">
+        <p class="text-muted small">
+            Este documento es una guía general y no reemplaza una revisión legal formal. Se recomienda que un
+            profesional legal la valide antes de un lanzamiento en producción.
+        </p>
+
+        <h2 class="sobre-subtitulo-centrado" style="text-align: left;">1. Qué información recopilamos</h2>
+        <p>
+            Al crear una cuenta solicitamos nombre de usuario, RUT, correo electrónico y contraseña (almacenada
+            siempre con cifrado, nunca en texto plano). Si aplicas evaluaciones, guardamos el nombre del
+            participante, observaciones y las respuestas registradas.
+        </p>
+
+        <h2 class="sobre-subtitulo-centrado" style="text-align: left;">2. Para qué usamos tu información</h2>
+        <p>
+            Usamos estos datos exclusivamente para permitirte iniciar sesión, aplicar y consultar tus propias
+            evaluaciones, y para que el equipo de NodoTO pueda dar soporte cuando reportas un problema.
+        </p>
+
+        <h2 class="sobre-subtitulo-centrado" style="text-align: left;">3. Con quién compartimos tu información</h2>
+        <p>
+            No vendemos ni compartimos tus datos con terceros con fines comerciales. Solo el personal
+            administrativo de NodoTO puede acceder a información de cuentas para fines de soporte y
+            administración de la plataforma.
+        </p>
+
+        <h2 class="sobre-subtitulo-centrado" style="text-align: left;">4. Seguridad</h2>
+        <p>
+            Las contraseñas se almacenan con algoritmos de hash seguros. El acceso a funciones administrativas
+            está restringido a cuentas con permisos de administrador. Cada usuario solo puede ver las
+            evaluaciones que él mismo ha realizado.
+        </p>
+
+        <h2 class="sobre-subtitulo-centrado" style="text-align: left;">5. Tus derechos</h2>
+        <p>
+            Puedes solicitar la corrección o eliminación de tus datos personales escribiendo a través del
+            formulario de reportes de esta misma plataforma.
+        </p>
+
+        <h2 class="sobre-subtitulo-centrado" style="text-align: left;">6. Contacto</h2>
+        <p>
+            Si tienes dudas sobre esta política, puedes reportarlas usando el botón "Reportar un problema"
+            disponible en el pie de página.
+        </p>
+    </div>
+</section>
+{% endblock %}

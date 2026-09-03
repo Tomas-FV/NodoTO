@@ -1,0 +1,223 @@
+{% extends 'baseadmin.html' %}
+{% load static %}
+
+{% block title %}Usuarios{% endblock %}
+{% block header_title %}Gestión de usuarios{% endblock %}
+
+{% block header_actions %}
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreateUsuario">Nuevo usuario</button>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-8">
+                    <label class="form-label mb-1 small text-muted">Buscar usuario</label>
+                    <input id="usuarioSearch" type="search" class="form-control" placeholder="Buscar por nombre, correo o RUT...">
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="text-muted small mb-1">Resumen</div>
+                    <div class="fw-semibold">{{ perfiles|length }} usuarios</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4" id="usuarioListContainer">
+        {% for perfil in perfiles %}
+        <div class="col-12 usuario-card-item" data-search="{{ perfil.username|lower }} {{ perfil.email|lower }} {{ perfil.run|lower }}">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body p-3 p-md-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3">
+                        <div class="flex-grow-1">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                {% if perfil.rol == 'admin' %}
+                                <span class="badge bg-primary-subtle text-primary">Administrador</span>
+                                {% else %}
+                                <span class="badge bg-light text-dark border">Terapeuta</span>
+                                {% endif %}
+                                {% if perfil.auth_user.is_active %}
+                                <span class="badge bg-success-subtle text-success">Activo</span>
+                                {% else %}
+                                <span class="badge bg-danger-subtle text-danger">Inactivo</span>
+                                {% endif %}
+                                <span class="badge bg-light text-dark border">{{ perfil.membresia|default:'Sin membresía' }}</span>
+                            </div>
+                            <h4 class="mb-1">{{ perfil.username }}</h4>
+                            <p class="text-muted mb-0">{{ perfil.email }} · RUT {{ perfil.run }}</p>
+                        </div>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditUsuario_{{ perfil.id }}">Editar</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalResetPassword_{{ perfil.id }}">Restablecer clave</button>
+                            {% if perfil.auth_user_id != request.user.id %}
+                            <form method="post" action="{% url 'adminhub_usuario_toggle_active' perfil.id %}" onsubmit="return confirm('¿Deseas cambiar el estado de esta cuenta?');">
+                                {% csrf_token %}
+                                {% if perfil.auth_user.is_active %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Desactivar</button>
+                                {% else %}
+                                <button type="submit" class="btn btn-outline-success btn-sm">Activar</button>
+                                {% endif %}
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalEditUsuario_{{ perfil.id }}" tabindex="-1" aria-labelledby="modalEditUsuarioLabel_{{ perfil.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'adminhub_usuario_edit' perfil.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalEditUsuarioLabel_{{ perfil.id }}">Editar usuario</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Nombre de usuario</label>
+                                <input type="text" name="username" class="form-control" value="{{ perfil.username }}" required>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">RUT</label>
+                                    <input type="text" name="run" class="form-control" value="{{ perfil.run }}" maxlength="12" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Correo electrónico</label>
+                                    <input type="email" name="email" class="form-control" value="{{ perfil.email }}" required>
+                                </div>
+                            </div>
+                            <div class="mb-3 mt-3">
+                                <label class="form-label">Membresía <span class="text-muted small">(asignación manual temporal)</span></label>
+                                <select name="membresia" class="form-select">
+                                    <option value="">Sin membresía</option>
+                                    {% for plan in membresias %}
+                                        <option value="{{ plan.id }}" {% if perfil.membresia_id == plan.id %}selected{% endif %}>{{ plan.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="checkbox" name="es_administrador" {% if perfil.rol == 'admin' %}checked{% endif %} id="edit_usuario_admin_{{ perfil.id }}" {% if perfil.auth_user_id == request.user.id %}disabled{% endif %}>
+                                <label class="form-check-label" for="edit_usuario_admin_{{ perfil.id }}">Es administrador</label>
+                                {% if perfil.auth_user_id == request.user.id %}
+                                <div class="form-text">No puedes cambiar tu propio nivel de administrador.</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalResetPassword_{{ perfil.id }}" tabindex="-1" aria-labelledby="modalResetPasswordLabel_{{ perfil.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'adminhub_usuario_reset_password' perfil.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalResetPasswordLabel_{{ perfil.id }}">Restablecer contraseña</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted small">Se asignará esta nueva contraseña a <strong>{{ perfil.username }}</strong>.</p>
+                            <div class="mb-3">
+                                <label class="form-label">Nueva contraseña</label>
+                                <input type="password" name="password" class="form-control" autocomplete="new-password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Repetir contraseña</label>
+                                <input type="password" name="password_confirmation" class="form-control" autocomplete="new-password" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar contraseña</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">No hay usuarios registrados todavía.</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="modal fade" id="modalCreateUsuario" tabindex="-1" aria-labelledby="modalCreateUsuarioLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post" action="{% url 'adminhub_usuario_create' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCreateUsuarioLabel">Nuevo usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre de usuario</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">RUT</label>
+                            <input type="text" name="run" class="form-control" placeholder="12345678-9" maxlength="12" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Correo electrónico</label>
+                            <input type="email" name="email" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="mb-3 mt-3">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" name="password" class="form-control" autocomplete="new-password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Membresía <span class="text-muted small">(asignación manual temporal)</span></label>
+                        <select name="membresia" class="form-select">
+                            <option value="">Sin membresía</option>
+                            {% for plan in membresias %}
+                                <option value="{{ plan.id }}">{{ plan.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" name="es_administrador" id="create_usuario_admin">
+                        <label class="form-check-label" for="create_usuario_admin">Es administrador</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Crear usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const usuarioSearchInput = document.getElementById('usuarioSearch');
+    const usuarioCards = document.querySelectorAll('.usuario-card-item');
+
+    if (usuarioSearchInput) {
+        usuarioSearchInput.addEventListener('input', function () {
+            const term = this.value.trim().toLowerCase();
+
+            usuarioCards.forEach(function (card) {
+                const hayCoincidencia = !term || card.dataset.search.includes(term);
+                card.style.display = hayCoincidencia ? '' : 'none';
+            });
+        });
+    }
+</script>
+{% endblock %}

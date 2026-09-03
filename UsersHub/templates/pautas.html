@@ -9,46 +9,188 @@
 
     <h2 class="pautas-titulo">Catálogo de Pautas de NodoTO</h2>
 
-    <input class="pauta-buscador" type="text" placeholder="Buscar por nombre de pauta (ej, M-CHAT)..." />
+    <input id="pautaBuscador" class="pauta-buscador" type="text" placeholder="Buscar por nombre de pauta (ej, M-CHAT)..." />
 
-    <div class="pautas-filtros">
-        <button class="pauta-filtro">VGI</button>
-        <button class="pauta-filtro activo">Infanto-Juvenil</button>
-        <button class="pauta-filtro">Salud Mental</button>
-        <button class="pauta-filtro">Adulto Físico</button>
-    </div>
+    <div id="pautaFiltros" class="pautas-filtros"></div>
 
-    <p class="pautas-conteo">Mostrando 8 de 42 pautas</p>
+    <p id="pautaConteo" class="pautas-conteo">Mostrando {{ pautas.count }} pauta{{ pautas.count|pluralize }}</p>
 
     <div class="pautas-grid">
-
-        {% for i in "12345678" %}
-        <div class="pauta-card">
+        {% for pauta in pautas %}
+        <div class="pauta-card" data-categoria="{% for categoria in pauta.categorias.all %}{{ categoria.nombre }}{% if not forloop.last %}|{% endif %}{% empty %}{{ pauta.categoria|default:'Sin categoría' }}{% endfor %}" data-search="{{ pauta.nombre|lower }} {{ pauta.descripcion|lower }} {% for categoria in pauta.categorias.all %}{{ categoria.nombre|lower }} {% endfor %}">
             <div class="pauta-card-header">
                 <div class="pauta-icono">🧠</div>
                 <div>
-                    <span class="pauta-categoria">INFANTO-JUVENIL</span>
-                    <h6 class="pauta-nombre">WISC-V (Escala de Inteligencia de Wechsler)</h6>
-                    <p class="pauta-subtitulo">Escala de Inteligencia de Wechsler</p>
+                    <span class="pauta-categoria">
+                        {% for categoria in pauta.categorias.all %}
+                            {{ categoria.nombre }}{% if not forloop.last %} · {% endif %}
+                        {% empty %}
+                            {{ pauta.categoria }}
+                        {% endfor %}
+                    </span>
+                    <h6 class="pauta-nombre">{{ pauta.nombre }}</h6>
+                    <p class="pauta-subtitulo">{{ pauta.descripcion|default:'Pauta clínica' }}</p>
                 </div>
             </div>
             <div class="pauta-meta">
-                <span>Edad: 20-30 meses</span>
-                <span>Tiempo est.: 10-15 min</span>
-                <span>Ítems: 20</span>
+                <span>Campos: {{ pauta.campos.count }}</span>
+                <span>Ítems: {{ pauta.items.count }}</span>
             </div>
-            <p class="pauta-descripcion">Escala de inteligencia que determina el coeficiente intelectual en función de distintas áreas cognitivas.</p>
-            <div class="pauta-barra-wrap">
-                <div class="pauta-barra" style="width: 60%;"></div>
-            </div>
+            <p class="pauta-descripcion">{{ pauta.descripcion|default:'Pauta disponible para evaluación clínica.' }}</p>
             <div class="pauta-acciones">
-                <button class="btn-aplicar">Aplicar Ahora (con resultados automáticos)</button>
-                <button class="btn-detalle">Ver Detalle y Puntuación</button>
+                <button type="button" class="btn-aplicar" data-bs-toggle="modal" data-bs-target="#modalEvaluarPauta_{{ pauta.id }}">Aplicar ahora</button>
             </div>
         </div>
-        {% endfor %}
 
+        {% include 'modals/modal_evaluar_pauta.html' with pauta=pauta modal_error_pauta_id=modal_error_pauta_id modal_error_messages=modal_error_messages %}
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">No hay pautas disponibles todavía.</div>
+        </div>
+        {% endfor %}
     </div>
+
+    {% if resultado %}
+    <div class="modal fade" id="modalResultadoEvaluacion" tabindex="-1" aria-labelledby="modalResultadoEvaluacionLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="modalResultadoEvaluacionLabel">Resultado de la evaluación</h5>
+                        <div class="small text-muted">{{ resultado.pauta.nombre }}{% if resultado.version %} · {{ resultado.version.nombre }}{% endif %}</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="result-summary mb-4">
+                        <span class="small text-muted d-block">Participante</span>
+                        <strong>{{ resultado.nombre_participante }}</strong>
+                        {% if resultado_modo == 'general' %}
+                        <div class="result-total mt-3">
+                            <span class="small text-muted d-block">Puntaje general</span>
+                            <strong>{{ resultado.puntaje_total }} puntos</strong>
+                        </div>
+                        {% elif resultado_modo == 'por_campo' %}
+                        <div class="result-total mt-3">
+                            <span class="small text-muted d-block">Modalidad</span>
+                            <strong>Resultado tabulado por campo</strong>
+                        </div>
+                        {% else %}
+                        <div class="result-total mt-3">
+                            <span class="small text-muted d-block">Modalidad</span>
+                            <strong>Evaluación sin puntuación automática</strong>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <h6 class="mb-3">Resultados por campo</h6>
+                    <div class="d-flex flex-column gap-3">
+                        {% for resultado_campo in resultado.resultados_campos.all %}
+                        <div class="border rounded p-3">
+                            <div class="d-flex justify-content-between align-items-start gap-3">
+                                <strong>{{ resultado_campo.campo.nombre|default:'Resultado general' }}</strong>
+                                <span class="badge bg-primary-subtle text-primary-emphasis">{{ resultado_campo.puntaje_obtenido }}{% if resultado_campo.puntaje_maximo %} / {{ resultado_campo.puntaje_maximo }}{% endif %}</span>
+                            </div>
+                            {% if resultado_campo.porcentaje is not None %}
+                                <div class="small text-muted mt-2">{{ resultado_campo.porcentaje|floatformat:2 }}%</div>
+                            {% endif %}
+                            {% if resultado_campo.etiqueta %}
+                                <div class="fw-semibold mt-2">{{ resultado_campo.etiqueta }}</div>
+                            {% endif %}
+                            {% if resultado_campo.interpretacion %}
+                                <p class="small text-muted mb-0 mt-1">{{ resultado_campo.interpretacion }}</p>
+                            {% endif %}
+                        </div>
+                        {% empty %}
+                        <p class="text-muted mb-0">No se generaron resultados por campo.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar resultado</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
+
+<script>
+    const buscador = document.getElementById('pautaBuscador');
+    const filtroContainer = document.getElementById('pautaFiltros');
+    const conteo = document.getElementById('pautaConteo');
+    const cards = Array.from(document.querySelectorAll('.pauta-card'));
+    let categoriaActiva = 'Todas';
+
+    function getCategorias() {
+        const categorias = new Set();
+        cards.forEach(card => {
+            const nombres = (card.dataset.categoria || '').split('|');
+            nombres.forEach((nombre) => {
+                nombre = nombre.trim();
+                if (nombre) categorias.add(nombre);
+            });
+        });
+        return Array.from(categorias).sort((a, b) => a.localeCompare(b));
+    }
+
+    function renderFiltros() {
+        const categorias = getCategorias();
+        const buttons = ['Todas', ...categorias];
+
+        filtroContainer.innerHTML = buttons.map((categoria) => {
+            const activo = categoria === categoriaActiva ? 'activo' : '';
+            return `<button type="button" class="pauta-filtro ${activo}" data-categoria="${categoria}">${categoria}</button>`;
+        }).join('');
+
+        filtroContainer.querySelectorAll('.pauta-filtro').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                categoriaActiva = btn.dataset.categoria;
+                renderFiltros();
+                aplicarFiltros();
+            });
+        });
+    }
+
+    function aplicarFiltros() {
+        const termino = (buscador.value || '').trim().toLowerCase();
+        let visibles = 0;
+
+        cards.forEach((card) => {
+            const categorias = (card.dataset.categoria || '').split('|').map((item) => item.trim());
+            const texto = (card.dataset.search || '').toLowerCase();
+            const coincideCategoria = categoriaActiva === 'Todas' || categorias.includes(categoriaActiva);
+            const coincideTexto = !termino || texto.includes(termino);
+            const visible = coincideCategoria && coincideTexto;
+
+            card.style.display = visible ? '' : 'none';
+            if (visible) visibles += 1;
+        });
+
+        const plural = visibles === 1 ? 'pauta' : 'pautas';
+        conteo.textContent = `Mostrando ${visibles} ${plural}`;
+    }
+
+    if (buscador) {
+        buscador.addEventListener('input', aplicarFiltros);
+    }
+
+    const modalErrorId = '{{ modal_error_pauta_id|default:"" }}';
+    if (modalErrorId) {
+        const modal = document.getElementById(`modalEvaluarPauta_${modalErrorId}`);
+        if (modal) {
+            const bsModal = new bootstrap.Modal(modal, { backdrop: true, keyboard: true });
+            bsModal.show();
+        }
+    }
+
+    const resultadoModal = document.getElementById('modalResultadoEvaluacion');
+    if (resultadoModal) {
+        new bootstrap.Modal(resultadoModal).show();
+    }
+
+    renderFiltros();
+    aplicarFiltros();
+</script>
 
 {% endblock %}

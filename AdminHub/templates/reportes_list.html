@@ -1,0 +1,112 @@
+{% extends 'baseadmin.html' %}
+{% load static %}
+
+{% block title %}Reportes{% endblock %}
+{% block header_title %}Reportes de usuarios{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-8">
+                    <label class="form-label mb-1 small text-muted">Filtrar por estado</label>
+                    <select id="reporteFiltroEstado" class="form-select">
+                        <option value="">Todos</option>
+                        {% for clave, nombre in estado_choices %}
+                            <option value="{{ clave }}">{{ nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="text-muted small mb-1">Resumen</div>
+                    <div class="fw-semibold">{{ reportes|length }} reportes</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for reporte in reportes %}
+        <div class="col-12 reporte-card-item" data-estado="{{ reporte.estado }}">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3">
+                        <div class="flex-grow-1">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                <span class="badge {% if reporte.estado == 'resuelto' %}bg-success-subtle text-success{% elif reporte.estado == 'descartado' %}bg-secondary-subtle text-secondary{% elif reporte.estado == 'en_revision' %}bg-warning-subtle text-warning{% else %}bg-light text-dark border{% endif %}">
+                                    {{ reporte.get_estado_display }}
+                                </span>
+                                <span class="small text-muted">{{ reporte.fecha_reporte|date:'d/m/Y H:i' }}</span>
+                                {% if reporte.usuario_reporta %}
+                                    <span class="badge bg-light text-dark border">{{ reporte.usuario_reporta.username }}</span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark border">Anónimo</span>
+                                {% endif %}
+                            </div>
+                            <p class="mb-1">{{ reporte.descripcion }}</p>
+                            {% if reporte.url_pagina %}
+                                <p class="small text-muted mb-0">Página: {{ reporte.url_pagina }}</p>
+                            {% endif %}
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalUpdateReporte_{{ reporte.id }}">Gestionar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalUpdateReporte_{{ reporte.id }}" tabindex="-1" aria-labelledby="modalUpdateReporteLabel_{{ reporte.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'adminhub_reporte_update' reporte.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalUpdateReporteLabel_{{ reporte.id }}">Gestionar reporte</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted small">{{ reporte.descripcion }}</p>
+                            <div class="mb-3">
+                                <label class="form-label">Estado</label>
+                                <select name="estado" class="form-select">
+                                    {% for clave, nombre in estado_choices %}
+                                        <option value="{{ clave }}" {% if reporte.estado == clave %}selected{% endif %}>{{ nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Respuesta para el usuario</label>
+                                <textarea name="respuesta_admin" class="form-control" rows="3">{{ reporte.respuesta_admin }}</textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">No hay reportes registrados todavía.</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    const filtroEstado = document.getElementById('reporteFiltroEstado');
+    const reporteCards = document.querySelectorAll('.reporte-card-item');
+
+    if (filtroEstado) {
+        filtroEstado.addEventListener('change', function () {
+            const valor = this.value;
+            reporteCards.forEach(function (card) {
+                const coincide = !valor || card.dataset.estado === valor;
+                card.style.display = coincide ? '' : 'none';
+            });
+        });
+    }
+</script>
+{% endblock %}

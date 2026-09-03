@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Mis evaluaciones {% endblock %}
+
+{% block content %}
+<div class="pautas-wrapper">
+    <h2 class="pautas-titulo">Mis evaluaciones</h2>
+    <p class="text-muted">Aquí solo aparecen las evaluaciones que tú has realizado.</p>
+
+    {% if evaluaciones %}
+    <div class="table-responsive mt-4">
+        <table class="table align-middle mis-evaluaciones-table">
+            <thead>
+                <tr>
+                    <th>Pauta</th>
+                    <th>Versión</th>
+                    <th>Participante</th>
+                    <th>Puntaje</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for evaluacion in evaluaciones %}
+                <tr>
+                    <td data-label="Pauta"><a href="{% url 'mi_evaluacion_detalle' evaluacion.id %}">{{ evaluacion.pauta.nombre }}</a></td>
+                    <td data-label="Versión">{{ evaluacion.version.nombre|default:'Pauta base' }}</td>
+                    <td data-label="Participante">{{ evaluacion.nombre_participante }}</td>
+                    <td data-label="Puntaje">{{ evaluacion.puntaje_total }}</td>
+                    <td data-label="Fecha">{{ evaluacion.fecha_creacion|date:'d/m/Y H:i' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info mt-4">Aún no has realizado ninguna evaluación.</div>
+    {% endif %}
+</div>
+{% endblock %}

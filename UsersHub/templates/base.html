@@ -41,44 +41,41 @@
             <div class="collapse navbar-collapse" id="navbarContent">
                 <!-- Links izquierda -->
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'pautas' %}">Pautas</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'sobrenodoto' %}">Sobre NodoTO</a>
+                        <a class="nav-link disabled" tabindex="-1" aria-disabled="true" href="#">Usuarios</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link disabled" tabindex="-1" aria-disabled="true" href="#">¡¡Pronto más!!</a>
+                        <a class="nav-link disabled" tabindex="-1" aria-disabled="true" href="#">Reportes</a>
                     </li>
+                    {% endif %}
                 </ul>
 
                 <!-- Elementos derecha -->
                 <div class="d-flex align-items-center gap-3">
-                    <!-- Notificaciones -->
-                    <!-- <div class="dropdown">
-                        <a class="link-secondary dropdown-toggle" href="#"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-bell"></i>
-                            <span class="badge rounded-pill bg-danger">1</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">Sin notificaciones</a></li>
-                        </ul>
-                    </div> -->
-                    <!-- Avatar -->
-                    <!-- <div class="dropdown">
-                        <a class="dropdown-toggle d-flex align-items-center link-secondary" href="#"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="https://mdbcdn.b-cdn.net/img/new/avatars/2.webp"
-                                class="rounded-circle" height="30" alt="Avatar" loading="lazy" />
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">Mi perfil</a></li>
-                            <li><a class="dropdown-item" href="#">Configuración</a></li>
+                    {% if user.is_authenticated %}
+                    <div class="dropdown nav-user-dropdown">
+                        <button class="btn nav-user-button dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="nav-user-avatar">{{ user.username|first|upper }}</span>
+                            <span class="nav-user-name">{{ user.username }}</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-lg-end nav-user-menu">
+                            <li><span class="dropdown-item-text small nav-user-menu-title">Sesión iniciada</span></li>
+                            <li><a class="dropdown-item" href="{% url 'mis_evaluaciones' %}">Mis evaluaciones</a></li>
+                            <li><a class="dropdown-item" href="{% url 'mis_reportes' %}">Mis reportes</a></li>
+                            {% if user.is_staff %}
+                            <li><a class="dropdown-item" href="{% url 'adminhub_view' %}">Panel administrativo</a></li>
+                            {% endif %}
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#">Cerrar sesión</a></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar sesión</a></li>
                         </ul>
-                    </div> -->
+                    </div>
+                    {% else %}
+                    <a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Iniciar sesión</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -88,6 +85,30 @@
 
         {% endblock %}
     </main>
+
+    {% if messages %}
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+        {% for message in messages %}
+        <div class="toast align-items-center border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="4200">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2" style="background: #edf8f0; color: #1d4d36; border-radius: 12px;">
+                    <span class="fw-bold" style="font-size: 1.1rem;">✓</span>
+                    <span>{{ message }}</span>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <script>
+        document.querySelectorAll('.toast').forEach((toastEl) => {
+            const toast = new bootstrap.Toast(toastEl, { delay: 4200 });
+            toast.show();
+        });
+    </script>
+
     <footer class="text-center bg-body-tertiary">
         <!-- Grid container -->
         <div class="container pt-4">
@@ -103,6 +124,12 @@
                     data-mdb-ripple-color="dark"><i class="fab fa-instagram"></i></a>
             </section>
             <!-- Section: Social media -->
+
+            <!-- Enlaces legales y soporte -->
+            <div class="d-flex flex-wrap justify-content-center gap-3 mb-3">
+                <a href="{% url 'privacidad' %}" class="small text-muted">Política de privacidad</a>
+                <button type="button" class="small text-muted btn btn-link p-0 border-0" data-bs-toggle="modal" data-bs-target="#modalReportarProblema">Reportar un problema</button>
+            </div>
         </div>
         <!-- Grid container -->
 
@@ -112,6 +139,29 @@
         </div>
         <!-- Copyright -->
     </footer>
+
+    <div class="modal fade" id="modalReportarProblema" tabindex="-1" aria-labelledby="modalReportarProblemaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post" action="{% url 'reportar_problema' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="url_pagina" value="{{ request.path }}">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalReportarProblemaLabel">Reportar un problema</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label" for="reporte_descripcion">Cuéntanos qué ocurrió</label>
+                        <textarea id="reporte_descripcion" name="descripcion" class="form-control" rows="4" placeholder="Ej: Al guardar la evaluación me aparece un error..." required></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Enviar reporte</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

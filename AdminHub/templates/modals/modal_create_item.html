@@ -1,0 +1,67 @@
+<div class="modal fade" id="modalCreateItem_{{ campo.id }}" tabindex="-1" aria-labelledby="modalCreateItemLabel_{{ campo.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'adminhub_item_create' pauta.id campo.id %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalCreateItemLabel_{{ campo.id }}">Nuevo ítem</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="item_texto_{{ campo.id }}">Pregunta o ítem</label>
+            <textarea id="item_texto_{{ campo.id }}" name="texto" class="form-control" rows="3" placeholder="Ej: ¿El paciente se limpia correctamente?" required></textarea>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="item_tipo_{{ campo.id }}">Tipo de respuesta</label>
+              <select id="item_tipo_{{ campo.id }}" name="tipo_respuesta" class="form-select">
+                <option value="">Sin tipo de respuesta</option>
+                {% for tipo in tipos_respuesta %}
+                  <option value="{{ tipo.id }}">{{ tipo.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="item_orden_{{ campo.id }}">Orden</label>
+              <input id="item_orden_{{ campo.id }}" type="number" name="orden" class="form-control" value="1" min="1">
+            </div>
+          </div>
+
+          <div class="mb-3 mt-3">
+            <label class="form-label" for="item_version_{{ campo.id }}">Versión</label>
+            <select id="item_version_{{ campo.id }}" name="version" class="form-select">
+              <option value="">Sin versión específica (pauta base)</option>
+              {% for version in pauta.versiones.all %}
+                <option value="{{ version.id }}">{{ version.nombre }} ({{ version.edad_min }}{% if version.edad_max %} - {{ version.edad_max }} años{% else %}+ años{% endif %})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="item_modo_puntuacion_{{ campo.id }}">Puntuación del ítem</label>
+            <select id="item_modo_puntuacion_{{ campo.id }}" name="modo_puntuacion" class="form-select">
+              {% for clave, nombre in item_score_modes %}
+                <option value="{{ clave }}">{{ nombre }}</option>
+              {% endfor %}
+            </select>
+            <div class="form-text">Texto no se puntúa automáticamente; número puede usar su valor directo.</div>
+          </div>
+
+          <div class="mb-3 mt-3">
+            <label class="form-label" for="item_descripcion_{{ campo.id }}">Descripción</label>
+            <textarea id="item_descripcion_{{ campo.id }}" name="descripcion" class="form-control" rows="2" placeholder="Detalles adicionales del ítem"></textarea>
+          </div>
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" checked name="obligatorio" id="item_obligatorio_{{ campo.id }}">
+            <label class="form-check-label" for="item_obligatorio_{{ campo.id }}">Ítem obligatorio</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar ítem</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %} Sobre NodoTO {% endblock %}
+{% block title %} NodoTO {% endblock %}
 
 {% block content %}
 
@@ -10,6 +10,17 @@
     <span class="sobre-eyebrow">Conoce el proyecto</span>
     <h1>Tecnología al servicio<br>del terapeuta ocupacional</h1>
     <p>NodoTO nació para que los profesionales dediquen más tiempo a sus pacientes<br>y menos a las tareas administrativas.</p>
+    <div class="home-hero-acciones">
+        {% if user.is_authenticated %}
+            <a class="btn-primario" href="{% url 'pautas' %}">Ver Pautas</a>
+            {% if user.is_staff %}
+                <a class="btn-secundario" href="{% url 'adminhub_view' %}">Ir al panel</a>
+            {% endif %}
+        {% else %}
+            <a class="btn-primario" href="{% url 'login' %}">Iniciar sesión</a>
+            <a class="btn-secundario" href="{% url 'register' %}">Crear cuenta</a>
+        {% endif %}
+    </div>
 </div>
 
 <!-- Propósito -->
@@ -44,12 +55,6 @@
                 <p>Organiza el historial clínico de cada usuario, sus evaluaciones y el seguimiento de su progreso.</p>
                 <span class="home-card-tag">PRÓXIMAMENTE</span>
             </div>
-            <!-- <div class="sobre-card">
-                <div class="sobre-card-icono">📊</div>
-                <h5>Reportes clínicos</h5>
-                <p>Genera informes listos para compartir o imprimir, con toda la información organizada y disponible.</p>
-                <span class="home-card-tag">PRÓXIMAMENTE</span>
-            </div> -->
             <div class="sobre-card">
                 <div class="sobre-card-icono">🔒</div>
                 <h5>Seguridad y confiabilidad</h5>
@@ -89,11 +94,18 @@
 <section class="sobre-section sobre-cta">
     <div class="sobre-wrapper sobre-cta-inner">
         <h2>¿Listo para empezar?</h2>
-        <p>Explora el catálogo de pautas o descubre todo lo que NodoTO tiene para ti.</p>
-        <div class="home-hero-acciones">
-            <a class="btn-primario" href="{% url 'pautas' %}">Ver Pautas</a>
-            <a class="btn-secundario" href="{% url 'home' %}">Volver al inicio</a>
-        </div>
+        {% if user.is_authenticated %}
+            <p>Explora el catálogo de pautas y continúa con tu trabajo clínico.</p>
+            <div class="home-hero-acciones">
+                <a class="btn-primario" href="{% url 'pautas' %}">Ver Pautas</a>
+            </div>
+        {% else %}
+            <p>Crea tu cuenta o inicia sesión para acceder al catálogo de pautas.</p>
+            <div class="home-hero-acciones">
+                <a class="btn-primario" href="{% url 'register' %}">Crear cuenta</a>
+                <a class="btn-secundario" href="{% url 'login' %}">Iniciar sesión</a>
+            </div>
+        {% endif %}
     </div>
 </section>
 
