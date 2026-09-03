@@ -1,0 +1,542 @@
+{% extends 'baseadmin.html' %}
+{% load static %}
+
+{% block title %}Detalle de pauta{% endblock %}
+{% block header_title %}{{ pauta.nombre }}{% endblock %}
+
+{% block header_actions %}
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreateCampo">Nuevo campo</button>
+    <a href="{% url 'adminhub_pautas' %}" class="btn btn-outline-secondary">Volver</a>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        {% for categoria in pauta.categorias.all %}
+                            <span class="badge bg-primary-subtle text-primary">{{ categoria.nombre }}</span>
+                        {% empty %}
+                            <span class="badge bg-primary-subtle text-primary">{{ pauta.categoria }}</span>
+                        {% endfor %}
+                    </div>
+                    <h4 class="mb-1">{{ pauta.nombre }}</h4>
+                    <p class="mb-0 text-muted">{{ pauta.descripcion|default:'Sin descripción' }}</p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-light text-dark border">{{ pauta.campos.count }} campos</span>
+                    <span class="badge bg-light text-dark border">{{ pauta.items.count }} ítems</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center gap-3">
+            <h5 class="mb-0">Pauta base</h5>
+            <span class="badge bg-light text-dark border">Base general</span>
+        </div>
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge bg-light text-dark border">{{ pauta.campos|length }} campos base</span>
+                <span class="badge bg-light text-dark border">{{ pauta.items.count }} ítems base</span>
+            </div>
+            <p class="text-muted mb-0">Esta es la estructura principal de la pauta y se usa cuando no aplica ninguna versión por edad específica.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label" for="adminVersionFilter_{{ pauta.id }}">Filtrar por versión</label>
+                    <select id="adminVersionFilter_{{ pauta.id }}" class="form-select">
+                        <option value="">Todas / base general</option>
+                        {% for version in pauta.versiones.all %}
+                            <option value="{{ version.id }}">{{ version.nombre }} ({{ version.edad_min }}{% if version.edad_max %} - {{ version.edad_max }} años{% else %}+ años{% endif %})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center gap-3">
+            <h5 class="mb-0">Versiones por rango etario</h5>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateVersion">+ Nueva versión</button>
+        </div>
+        <div class="card-body">
+            {% if pauta.versiones.all %}
+                <div class="row g-3">
+                    {% for version in pauta.versiones.all %}
+                    <div class="col-md-6 col-xl-4">
+                        <div class="border rounded p-3 h-100">
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                <div>
+                                    <strong>{{ version.nombre }}</strong>
+                                    <div class="small text-muted">{{ version.edad_min }}{% if version.edad_max %} - {{ version.edad_max }} años{% else %}+ años{% endif %}</div>
+                                </div>
+                                {% if version.activa %}
+                                    <span class="badge bg-success-subtle text-success-emphasis">Activa</span>
+                                {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary-emphasis">Inactiva</span>
+                                {% endif %}
+                            </div>
+                            {% if version.descripcion %}<p class="small text-muted mb-3">{{ version.descripcion }}</p>{% endif %}
+                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                <span class="badge bg-light text-dark border">{{ version.campos.count }} campos</span>
+                                <span class="badge bg-light text-dark border">{{ version.items.count }} ítems</span>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditVersion_{{ version.id }}">Editar</button>
+                                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalDeleteVersion_{{ version.id }}">Eliminar</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">Esta pauta no tiene versiones por rango etario. Se usará como pauta base.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center gap-3">
+            <div>
+                <h5 class="mb-0">Reglas de tabulación</h5>
+                <small class="text-muted">Define qué significa cada rango de puntaje.</small>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateRegla">+ Nueva regla</button>
+        </div>
+        <div class="card-body">
+            {% if reglas_tabulacion %}
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Versión</th>
+                                <th>Campo</th>
+                                <th>Rango</th>
+                                <th>Resultado</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for regla in reglas_tabulacion %}
+                            <tr>
+                                <td>{{ regla.version.nombre|default:'Todas' }}</td>
+                                <td>{{ regla.campo.nombre|default:'General' }}</td>
+                                <td>{{ regla.puntaje_minimo }} - {{ regla.puntaje_maximo }}</td>
+                                <td><strong>{{ regla.etiqueta }}</strong></td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditRegla_{{ regla.id }}">Editar</button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalDeleteRegla_{{ regla.id }}">Eliminar</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">Aún no hay reglas. Sin reglas, se mostrará el puntaje por campo sin interpretación automática.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if pauta.campos.all %}
+        {% for campo in pauta.campos.all %}
+        <div class="card shadow-sm border-0 mb-4 admin-campo-card" data-version-id="{{ campo.version_id|default:'' }}">
+            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center gap-3">
+                <h5 class="mb-0">{{ campo.nombre }}</h5>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditCampo_{{ campo.id }}">Editar</button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalDeleteCampo_{{ campo.id }}">Eliminar</button>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateItem_{{ campo.id }}">Nuevo ítem</button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if campo.descripcion %}
+                    <p class="text-muted small mb-3">{{ campo.descripcion }}</p>
+                {% endif %}
+
+                {% if campo.items.all %}
+                    <div class="accordion admin-item-list" id="accordionItems_{{ campo.id }}">
+                        {% for item in campo.items.all %}
+                        <div class="accordion-item border rounded mb-2 overflow-hidden admin-item-card" data-version-id="{{ item.version_id|default:'' }}">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseItem_{{ item.id }}" aria-expanded="false">
+                                    <span class="d-flex justify-content-between align-items-center w-100 gap-3">
+                                        <span>{{ item.texto }}</span>
+                                        <span class="d-flex align-items-center gap-2 flex-wrap">
+                                            <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ item.tipo_respuesta|default:'Sin tipo' }}</span>
+                                            {% if item.obligatorio %}
+                                            <span class="badge bg-success-subtle text-success-emphasis">Obligatorio</span>
+                                            {% else %}
+                                            <span class="badge bg-light text-dark border">Opcional</span>
+                                            {% endif %}
+                                        </span>
+                                    </span>
+                                </button>
+                            </h2>
+                            <div id="collapseItem_{{ item.id }}" class="accordion-collapse collapse" data-bs-parent="#accordionItems_{{ campo.id }}">
+                                <div class="accordion-body">
+                                    <div class="d-flex justify-content-end gap-2 mb-3 flex-wrap">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditItem_{{ item.id }}">Editar</button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalDeleteItem_{{ item.id }}">Eliminar</button>
+                                        {% if item.tipo_respuesta and item.tipo_respuesta.clave in 'checkbox,escala_4' %}
+                                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateOpcion_{{ item.id }}">+ opción</button>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if item.opciones.all %}
+                                    <div class="d-flex flex-wrap gap-2 mb-2">
+                                        {% for opcion in item.opciones.all %}
+                                            <span class="badge bg-light text-dark border">{{ opcion.etiqueta }}: {{ opcion.valor }} pts</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <div class="text-muted small mb-2">Sin opciones de respuesta.</div>
+                                    {% endif %}
+
+                                    {% if item.opciones.all %}
+                                    <div class="list-group list-group-flush border rounded">
+                                        {% for opcion in item.opciones.all %}
+                                        <div class="list-group-item d-flex justify-content-between align-items-center gap-3 py-2">
+                                            <div><strong>{{ opcion.etiqueta }}</strong> — {{ opcion.valor }} pts</div>
+                                            <div class="d-flex gap-2">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditOpcion_{{ opcion.id }}">Editar</button>
+                                                <form method="post" action="{% url 'adminhub_opcion_delete' pauta.id campo.id item.id opcion.id %}" onsubmit="return confirm('¿Deseas eliminar esta opción?');">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm">Eliminar</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">Este campo no tiene ítems.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalEditCampo_{{ campo.id }}" tabindex="-1" aria-labelledby="modalEditCampoLabel_{{ campo.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'adminhub_campo_edit' pauta.id campo.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalEditCampoLabel_{{ campo.id }}">Editar campo</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Nombre del campo</label>
+                                <input type="text" name="nombre" class="form-control" value="{{ campo.nombre }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Descripción</label>
+                                <textarea name="descripcion" class="form-control" rows="3">{{ campo.descripcion }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Orden</label>
+                                <input type="number" name="orden" class="form-control" value="{{ campo.orden }}" min="1">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalDeleteCampo_{{ campo.id }}" tabindex="-1" aria-labelledby="modalDeleteCampoLabel_{{ campo.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'adminhub_campo_delete' pauta.id campo.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header border-0">
+                            <h5 class="modal-title" id="modalDeleteCampoLabel_{{ campo.id }}">Eliminar campo</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-0">¿Deseas eliminar el campo <strong>{{ campo.nombre }}</strong>? Se eliminarán también todos sus ítems y opciones asociadas.</p>
+                        </div>
+                        <div class="modal-footer border-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% for item in campo.items.all %}
+        <div class="modal fade" id="modalEditItem_{{ item.id }}" tabindex="-1" aria-labelledby="modalEditItemLabel_{{ item.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'adminhub_item_edit' pauta.id campo.id item.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalEditItemLabel_{{ item.id }}">Editar ítem</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Pregunta o ítem</label>
+                                <textarea name="texto" class="form-control" rows="3" required>{{ item.texto }}</textarea>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Tipo de respuesta</label>
+                                    <select name="tipo_respuesta" class="form-select">
+                                        <option value="">Sin tipo de respuesta</option>
+                                        {% for tipo in tipos_respuesta %}
+                                            <option value="{{ tipo.id }}" {% if item.tipo_respuesta and item.tipo_respuesta.id == tipo.id %}selected{% endif %}>{{ tipo.nombre }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Orden</label>
+                                    <input type="number" name="orden" class="form-control" value="{{ item.orden }}" min="1">
+                                </div>
+                            </div>
+                            <div class="mb-3 mt-3">
+                                <label class="form-label">Versión</label>
+                                <select name="version" class="form-select">
+                                    <option value="">Sin versión específica (pauta base)</option>
+                                    {% for version in pauta.versiones.all %}
+                                        <option value="{{ version.id }}" {% if item.version and item.version.id == version.id %}selected{% endif %}>{{ version.nombre }} ({{ version.edad_min }}{% if version.edad_max %} - {{ version.edad_max }} años{% else %}+ años{% endif %})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Puntuación del ítem</label>
+                                <select name="modo_puntuacion" class="form-select">
+                                    {% for clave, nombre in item_score_modes %}
+                                        <option value="{{ clave }}" {% if item.modo_puntuacion == clave %}selected{% endif %}>{{ nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">Texto no se puntúa automáticamente; número puede usar su valor directo.</div>
+                            </div>
+                            <div class="mb-3 mt-3">
+                                <label class="form-label">Descripción</label>
+                                <textarea name="descripcion" class="form-control" rows="2">{{ item.descripcion }}</textarea>
+                            </div>
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="checkbox" name="obligatorio" {% if item.obligatorio %}checked{% endif %} id="edit_item_obligatorio_{{ item.id }}">
+                                <label class="form-check-label" for="edit_item_obligatorio_{{ item.id }}">Ítem obligatorio</label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalDeleteItem_{{ item.id }}" tabindex="-1" aria-labelledby="modalDeleteItemLabel_{{ item.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'adminhub_item_delete' pauta.id campo.id item.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header border-0">
+                            <h5 class="modal-title" id="modalDeleteItemLabel_{{ item.id }}">Eliminar ítem</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="mb-0">¿Deseas eliminar el ítem <strong>{{ item.texto }}</strong>? También se borrarán sus opciones asociadas.</p>
+                        </div>
+                        <div class="modal-footer border-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% for opcion in item.opciones.all %}
+        <div class="modal fade" id="modalEditOpcion_{{ opcion.id }}" tabindex="-1" aria-labelledby="modalEditOpcionLabel_{{ opcion.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'adminhub_opcion_edit' pauta.id campo.id item.id opcion.id %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalEditOpcionLabel_{{ opcion.id }}">Editar opción</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Etiqueta</label>
+                                <input type="text" name="etiqueta" class="form-control" value="{{ opcion.etiqueta }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Valor / puntaje</label>
+                                <input type="number" name="valor" class="form-control" value="{{ opcion.valor }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Orden</label>
+                                <input type="number" name="orden" class="form-control" value="{{ opcion.orden }}" min="1">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endfor %}
+        {% endfor %}
+    {% else %}
+    <div class="alert alert-info">Esta pauta no tiene campos aún.</div>
+    {% endif %}
+
+    <script>
+        (function () {
+            const selector = document.getElementById('adminVersionFilter_{{ pauta.id }}');
+            if (!selector) return;
+
+            function applyAdminVersionFilter() {
+                const selectedVersion = selector.value;
+                document.querySelectorAll('.admin-campo-card').forEach((campoCard) => {
+                    const campoVersion = campoCard.dataset.versionId || '';
+                    const fieldVisible = !selectedVersion || !campoVersion || campoVersion === selectedVersion;
+                    campoCard.style.display = fieldVisible ? '' : 'none';
+
+                    const itemCards = campoCard.querySelectorAll('.admin-item-card');
+                    itemCards.forEach((itemCard) => {
+                        const itemVersion = itemCard.dataset.versionId || '';
+                        const itemVisible = !selectedVersion || !itemVersion || itemVersion === selectedVersion;
+                        itemCard.style.display = itemVisible ? '' : 'none';
+                    });
+                });
+            }
+
+            selector.addEventListener('change', applyAdminVersionFilter);
+            applyAdminVersionFilter();
+        })();
+    </script>
+
+    <div class="modal fade" id="modalCreateVersion" tabindex="-1" aria-labelledby="modalCreateVersionLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post" action="{% url 'adminhub_version_create' pauta.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalCreateVersionLabel">Nueva versión de la pauta</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ version_form.as_p }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar versión</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% for version in pauta.versiones.all %}
+    <div class="modal fade" id="modalEditVersion_{{ version.id }}" tabindex="-1" aria-labelledby="modalEditVersionLabel_{{ version.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post" action="{% url 'adminhub_version_edit' pauta.id version.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalEditVersionLabel_{{ version.id }}">Editar versión</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" name="nombre" class="form-control" value="{{ version.nombre }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea name="descripcion" class="form-control" rows="3">{{ version.descripcion }}</textarea>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Edad mínima</label>
+                                <input type="number" name="edad_min" class="form-control" value="{{ version.edad_min }}" min="0" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Edad máxima</label>
+                                <input type="number" name="edad_max" class="form-control" value="{{ version.edad_max|default_if_none:'' }}" min="0" placeholder="Opcional">
+                            </div>
+                        </div>
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" name="activa" {% if version.activa %}checked{% endif %} id="version_activa_{{ version.id }}">
+                            <label class="form-check-label" for="version_activa_{{ version.id }}">Versión activa</label>
+                        </div>
+                        <div class="mb-3 mt-3">
+                            <label class="form-label">Modo de puntuación</label>
+                            <select name="modo_puntuacion" class="form-select">
+                                {% for clave, nombre in version_score_modes %}
+                                    <option value="{{ clave }}" {% if version.modo_puntuacion == clave %}selected{% endif %}>{{ nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalDeleteVersion_{{ version.id }}" tabindex="-1" aria-labelledby="modalDeleteVersionLabel_{{ version.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post" action="{% url 'adminhub_version_delete' pauta.id version.id %}">
+                    {% csrf_token %}
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title" id="modalDeleteVersionLabel_{{ version.id }}">Eliminar versión</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0">¿Deseas eliminar la versión <strong>{{ version.nombre }}</strong>? También se borrarán los campos e ítems asociados a ella.</p>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% include 'modals/modal_create_campo.html' %}
+    {% include 'modals/modal_reglas_tabulacion.html' %}
+    {% for campo in pauta.campos.all %}
+        {% include 'modals/modal_create_item.html' with pauta=pauta campo=campo %}
+    {% endfor %}
+    {% for campo in pauta.campos.all %}
+        {% for item in campo.items.all %}
+            {% include 'modals/modal_create_opcion.html' with pauta=pauta campo=campo item=item %}
+        {% endfor %}
+    {% endfor %}
+</div>
+{% endblock %}

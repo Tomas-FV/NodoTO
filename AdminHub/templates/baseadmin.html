@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+{% load static %}
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{% block title %}AdminHub{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/style.css' %}">
+</head>
+
+<body class="admin-layout">
+    <aside class="admin-sidebar">
+        <div class="sidebar-brand">
+            <a href="{% url 'adminhub_view' %}">
+                <img src="{% static 'img/LogoNodoTO.png' %}" alt="NodoTO" loading="lazy" />
+                <span>AdminHub</span>
+            </a>
+        </div>
+
+        <button class="sidebar-toggle d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu"
+            aria-controls="sidebarMenu" aria-expanded="false" aria-label="Mostrar menú">
+            ☰ Menú
+        </button>
+
+        <div class="collapse d-lg-block" id="sidebarMenu">
+            <nav class="sidebar-nav">
+                <a class="sidebar-link {% if request.resolver_match.url_name == 'adminhub_view' %}active{% endif %}" href="{% url 'adminhub_view' %}">Dashboard</a>
+                <a class="sidebar-link {% if request.resolver_match.url_name == 'adminhub_pautas' %}active{% endif %}" href="{% url 'adminhub_pautas' %}">Pautas</a>
+                <a class="sidebar-link {% if request.resolver_match.url_name == 'adminhub_usuarios' %}active{% endif %}" href="{% url 'adminhub_usuarios' %}">Usuarios</a>
+                <a class="sidebar-link {% if request.resolver_match.url_name == 'adminhub_reportes' %}active{% endif %}" href="{% url 'adminhub_reportes' %}">Reportes</a>
+                <a class="sidebar-link {% if request.resolver_match.url_name == 'membrecias_view' %}active{% endif %}" href="#">Membresias</a>
+                <a class="sidebar-link {% if request.resolver_match.url_name == 'configuracion_view' %}active{% endif %}" href="#">Configuración</a>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            <a class="sidebar-workspace-button" href="{% url 'pautas' %}">
+                <span class="sidebar-workspace-icon" aria-hidden="true">↗</span>
+                <span>
+                    <strong>Vista del Usuario</strong>
+                    <small>Ir a evaluación</small>
+                </span>
+            </a>
+            <a class="sidebar-link" href="{% url 'adminhub_preview_404' %}">Ver página 404 (provisional)</a>
+            <small>© 2026 NodoTO</small>
+        </div>
+    </aside>
+
+    <div class="admin-content">
+        <header class="admin-header">
+            <div>
+                <h1>{% block header_title %}AdminHub{% endblock %}</h1>
+            </div>
+            <div class="admin-header-actions">
+                {% block header_actions %}{% endblock %}
+            </div>
+        </header>
+
+        <main class="admin-main">
+            {% if messages %}
+                <div class="admin-message-stack">
+                    {% for message in messages %}
+                        <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} admin-alert" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}
+            {% endblock %}
+        </main>
+
+        <footer class="admin-footer text-center">
+            <span>AdminHub · NodoTO</span>
+        </footer>
+    </div>
+</body>
+</html>

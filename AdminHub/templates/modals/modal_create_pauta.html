@@ -1,0 +1,67 @@
+<div class="modal fade" id="modalCreatePauta" tabindex="-1" aria-labelledby="modalCreatePautaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalCreatePautaLabel">Nueva pauta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" for="pauta_nombre">Nombre de la pauta</label>
+          <input type="text" id="pauta_nombre" name="nombre" class="form-control" placeholder="Ej: SPM-2" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="pauta_categorias">Categorías</label>
+          <select id="pauta_categorias" name="categorias" class="form-select" multiple size="4">
+            {% for categoria in categorias %}
+              <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+            {% endfor %}
+          </select>
+          <div class="form-text">Puedes seleccionar más de una categoría para clasificar la pauta.</div>
+        </div>
+
+        <div class="mb-3" id="campoCategoriaNuevaWrap">
+          <label class="form-label" for="pauta_categoria_nueva">Nueva categoría</label>
+          <input type="text" id="pauta_categoria_nueva" name="categoria_nueva" class="form-control" placeholder="Escribe la nueva categoría">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="pauta_descripcion">Descripción</label>
+          <textarea id="pauta_descripcion" name="descripcion" class="form-control" rows="4" placeholder="Descripción breve de la pauta..."></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="pauta_modo_puntuacion">Modo de puntuación</label>
+          <select id="pauta_modo_puntuacion" name="modo_puntuacion" class="form-select" required>
+            <option value="general" selected>Puntaje general</option>
+            <option value="por_campo">Puntaje por campo</option>
+            <option value="sin_puntaje">Sin puntuación</option>
+          </select>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="pauta_edad_min">Edad mínima general</label>
+            <input type="number" id="pauta_edad_min" name="edad_min" class="form-control" min="0" placeholder="Opcional">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="pauta_edad_max">Edad máxima general</label>
+            <input type="number" id="pauta_edad_max" name="edad_max" class="form-control" min="0" placeholder="Opcional">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar pauta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const select = document.getElementById('pauta_categorias');
+    if (!select) return;
+  })();
+</script>
