@@ -5,20 +5,23 @@
 
 {% block content %}
 <div class="pautas-wrapper">
-    <a href="{% url 'mis_evaluaciones' %}" class="small">&larr; Volver a mis evaluaciones</a>
-    <h2 class="pautas-titulo mt-2">{{ evaluacion.pauta.nombre }}</h2>
-    <p class="text-muted mb-1">{{ evaluacion.version.nombre|default:'Pauta base' }}</p>
-    <div class="d-flex flex-wrap gap-2 text-muted small mb-3">
-        <span>Participante: <strong>{{ evaluacion.nombre_participante }}</strong></span>
-        <span>Fecha: {{ evaluacion.fecha_creacion|date:'d/m/Y H:i' }}</span>
-        <span>Puntaje total: <strong>{{ evaluacion.puntaje_total }}</strong></span>
+    <a href="{% url 'mis_evaluaciones' %}" class="evaluacion-volver">&larr; Volver a mis evaluaciones</a>
+
+    <div class="evaluacion-detalle-header">
+        <h2 class="evaluacion-detalle-titulo">{{ evaluacion.pauta.nombre }}</h2>
+        <p class="evaluacion-detalle-version">{{ evaluacion.version.nombre|default:'Pauta base' }}</p>
+        <div class="evaluacion-detalle-meta">
+            <span class="evaluacion-meta-pill">Participante: {{ evaluacion.nombre_participante }}</span>
+            <span class="evaluacion-meta-pill">Fecha: {{ evaluacion.fecha_creacion|date:'d/m/Y H:i' }}</span>
+            <span class="evaluacion-meta-pill evaluacion-meta-pill-destacado">Puntaje total: {{ evaluacion.puntaje_total }}</span>
+        </div>
     </div>
 
     {% if resultados_campos %}
-    <h5 class="mt-4">Resultados por campo</h5>
+    <h5 class="evaluacion-seccion-titulo">Resultados por campo</h5>
     <div class="d-flex flex-wrap gap-2 mb-4">
         {% for resultado in resultados_campos %}
-        <span class="badge bg-light text-dark border">
+        <span class="evaluacion-resultado-badge">
             {{ resultado.campo.nombre|default:'General' }}: {{ resultado.puntaje_obtenido }}{% if resultado.puntaje_maximo %} / {{ resultado.puntaje_maximo }}{% endif %}
             {% if resultado.etiqueta %} · {{ resultado.etiqueta }}{% endif %}
         </span>
@@ -26,15 +29,15 @@
     </div>
     {% endif %}
 
-    <h5 class="mt-4">Respuestas y opciones marcadas</h5>
+    <h5 class="evaluacion-seccion-titulo">Respuestas y opciones marcadas</h5>
     {% for campo, respuestas in campos %}
-    <div class="card shadow-sm border-0 mb-3">
-        <div class="card-header bg-white border-bottom">
+    <div class="card evaluacion-campo-card mb-3">
+        <div class="card-header">
             <strong>{{ campo.nombre|default:'Sin campo' }}</strong>
         </div>
         <div class="list-group list-group-flush">
             {% for respuesta in respuestas %}
-            <div class="list-group-item">
+            <div class="list-group-item evaluacion-respuesta-item">
                 <div class="fw-semibold">{{ respuesta.item.texto }}</div>
                 <div class="text-muted small">Marcado: {{ respuesta.respuesta }}{% if respuesta.valor %} ({{ respuesta.valor }} pts){% endif %}</div>
             </div>
@@ -46,3 +49,4 @@
     {% endfor %}
 </div>
 {% endblock %}
+
