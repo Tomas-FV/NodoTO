@@ -57,14 +57,15 @@
                 <!-- Elementos derecha -->
                 <div class="d-flex align-items-center gap-3">
                     {% if user.is_authenticated %}
-                    <div class="dropdown">
-                        <button class="btn btn-link nav-user-button dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="dropdown nav-user-dropdown">
+                        <button class="btn nav-user-button dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <span class="nav-user-avatar">{{ user.username|first|upper }}</span>
-                            <span class="d-none d-sm-inline">{{ user.username }}</span>
+                            <span class="nav-user-name">{{ user.username }}</span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-lg-end">
-                            <li><span class="dropdown-item-text small text-muted">Sesión iniciada</span></li>
+                        <ul class="dropdown-menu dropdown-menu-lg-end nav-user-menu">
+                            <li><span class="dropdown-item-text small nav-user-menu-title">Sesión iniciada</span></li>
                             <li><a class="dropdown-item" href="{% url 'mis_evaluaciones' %}">Mis evaluaciones</a></li>
+                            <li><a class="dropdown-item" href="{% url 'mis_reportes' %}">Mis reportes</a></li>
                             {% if user.is_staff %}
                             <li><a class="dropdown-item" href="{% url 'adminhub_view' %}">Panel administrativo</a></li>
                             {% endif %}
@@ -123,6 +124,12 @@
                     data-mdb-ripple-color="dark"><i class="fab fa-instagram"></i></a>
             </section>
             <!-- Section: Social media -->
+
+            <!-- Enlaces legales y soporte -->
+            <div class="d-flex flex-wrap justify-content-center gap-3 mb-3">
+                <a href="{% url 'privacidad' %}" class="small text-muted">Política de privacidad</a>
+                <button type="button" class="small text-muted btn btn-link p-0 border-0" data-bs-toggle="modal" data-bs-target="#modalReportarProblema">Reportar un problema</button>
+            </div>
         </div>
         <!-- Grid container -->
 
@@ -132,6 +139,29 @@
         </div>
         <!-- Copyright -->
     </footer>
+
+    <div class="modal fade" id="modalReportarProblema" tabindex="-1" aria-labelledby="modalReportarProblemaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post" action="{% url 'reportar_problema' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="url_pagina" value="{{ request.path }}">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalReportarProblemaLabel">Reportar un problema</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label" for="reporte_descripcion">Cuéntanos qué ocurrió</label>
+                        <textarea id="reporte_descripcion" name="descripcion" class="form-control" rows="4" placeholder="Ej: Al guardar la evaluación me aparece un error..." required></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Enviar reporte</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

@@ -12,6 +12,7 @@ class Usuario(models.Model):
     username = models.CharField(max_length=100)
     run = models.CharField(max_length=12, unique=True)
     email = models.EmailField(unique=True)
+    telefono = models.CharField(max_length=15, unique=True, null=True, blank=True)
     password = models.CharField(max_length=100, blank=True)
     rol = models.CharField(max_length=20, choices=[('terapeuta', 'Terapeuta'), ('admin', 'Administrador')], default='terapeuta')
     membresia = models.ForeignKey(membresia, on_delete=models.SET_NULL, null=True, blank=True)
@@ -241,3 +242,29 @@ class ResultadoCampo(models.Model):
 
     def __str__(self):
         return f"{self.evaluacion} - {self.campo or 'General'}"
+    
+class reportes_issues(models.Model):
+    ESTADO_CHOICES = [
+        ('pendiente', 'Pendiente'),
+        ('en_revision', 'En revisión'),
+        ('resuelto', 'Resuelto'),
+        ('descartado', 'Descartado'),
+    ]
+    usuario_reporta = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='reportes_issues')
+    pauta = models.ForeignKey(Pauta, on_delete=models.SET_NULL, null=True, blank=True, related_name='reportes_issues')
+    version = models.ForeignKey(VersionPauta, on_delete=models.SET_NULL, null=True, blank=True, related_name='reportes_issues')
+    campo = models.ForeignKey(CampoPauta, on_delete=models.SET_NULL, null=True, blank=True, related_name='reportes_issues')
+    item = models.ForeignKey(ItemPauta, on_delete=models.SET_NULL, null=True, blank=True, related_name='reportes_issues')
+    url_pagina = models.CharField(max_length=300, blank=True)
+    descripcion = models.TextField()
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
+    respuesta_admin = models.TextField(blank=True)
+    fecha_reporte = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-fecha_reporte']
+
+    def __str__(self):
+        contexto = self.pauta.nombre if self.pauta else 'Reporte general'
+        return f"{contexto} - {self.get_estado_display()}"

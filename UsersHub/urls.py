@@ -7,4 +7,6 @@ urlpatterns = [
     path('pautas/<int:pauta_id>/evaluar/', views.evaluar_pauta_view, name='pautas_evaluar'),
     path('mis-evaluaciones/', views.mis_evaluaciones_view, name='mis_evaluaciones'),
     path('mis-evaluaciones/<int:evaluacion_id>/', views.mi_evaluacion_detalle_view, name='mi_evaluacion_detalle'),
+    path('reportar-problema/', views.reportar_problema_view, name='reportar_problema'),
+    path('mis-reportes/', views.mis_reportes_view, name='mis_reportes'),
 ]

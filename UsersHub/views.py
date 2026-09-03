@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from core.models import Pauta, Evaluacion, RespuestaEvaluacion, ResultadoCampo, ReglaTabulacion
+from core.models import Pauta, Evaluacion, RespuestaEvaluacion, ResultadoCampo, ReglaTabulacion, reportes_issues
 
 
 @login_required
@@ -229,3 +229,29 @@ def mi_evaluacion_detalle_view(request, evaluacion_id):
         'campos': campos.items(),
         'resultados_campos': resultados_campos,
     })
+
+
+def reportar_problema_view(request):
+    if request.method == 'POST':
+        descripcion = (request.POST.get('descripcion') or '').strip()
+        url_pagina = (request.POST.get('url_pagina') or '').strip()
+
+        if not descripcion:
+            messages.error(request, 'Describe brevemente el problema antes de enviarlo.')
+        else:
+            reportes_issues.objects.create(
+                usuario_reporta=request.user if request.user.is_authenticated else None,
+                descripcion=descripcion,
+                url_pagina=url_pagina,
+            )
+            messages.success(request, 'Gracias por tu reporte, lo revisaremos pronto.')
+
+    volver = request.POST.get('url_pagina') or reverse('home')
+    return redirect(volver)
+
+
+@login_required
+def mis_reportes_view(request):
+    # cada usuario solo ve los reportes que él mismo envió
+    reportes = reportes_issues.objects.filter(usuario_reporta=request.user).order_by('-fecha_reporte')
+    return render(request, 'mis_reportes.html', {'reportes': reportes})

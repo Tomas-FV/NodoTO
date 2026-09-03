@@ -10,6 +10,10 @@ def landing_view(request):
     return render(request, 'landing.html')
 
 
+def privacidad_view(request):
+    return render(request, 'privacidad.html')
+
+
 def login_view(request):
     if request.user.is_authenticated:
         return redirect('home')

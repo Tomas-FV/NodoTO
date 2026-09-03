@@ -1,5 +1,5 @@
 from django import forms
-from core.models import Pauta, categoriaPauta, CampoPauta, ItemPauta, OpcionRespuesta, TipoRespuesta, VersionPauta, ReglaTabulacion
+from core.models import Pauta, categoriaPauta, CampoPauta, ItemPauta, OpcionRespuesta, TipoRespuesta, VersionPauta, ReglaTabulacion, reportes_issues
 
 
 class VersionPautaForm(forms.ModelForm):
@@ -134,4 +134,14 @@ class ReglaTabulacionForm(forms.ModelForm):
             'etiqueta': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Riesgo moderado'}),
             'interpretacion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'orden': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+        }
+
+
+class ReporteIssueForm(forms.ModelForm):
+    class Meta:
+        model = reportes_issues
+        fields = ['estado', 'respuesta_admin']
+        widgets = {
+            'estado': forms.Select(attrs={'class': 'form-select'}),
+            'respuesta_admin': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Respuesta visible para el usuario que reportó...'}),
         }

@@ -21,6 +21,7 @@ from core import views as core_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', core_views.landing_view, name='home'),
+    path('politica-privacidad/', core_views.privacidad_view, name='privacidad'),
     path('auth/', include('core.urls')),
     path('admintools/', include('AdminHub.urls')),
     path('', include('UsersHub.urls')),

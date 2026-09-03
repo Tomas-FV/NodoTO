@@ -15,6 +15,7 @@ from .models import (
     ReglaTabulacion,
     ResultadoCampo,
     membresia,
+    reportes_issues,
 )
 
 
@@ -119,3 +120,10 @@ class ResultadoCampoAdmin(admin.ModelAdmin):
 class MembresiaAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'precio')
     search_fields = ('nombre',)
+
+
+@admin.register(reportes_issues)
+class ReportesIssuesAdmin(admin.ModelAdmin):
+    list_display = ('usuario_reporta', 'pauta', 'estado', 'fecha_reporte')
+    search_fields = ('descripcion', 'usuario_reporta__username')
+    list_filter = ('estado', 'pauta')

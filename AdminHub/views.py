@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.models import User
 from django.contrib import messages
-from core.models import Pauta, CampoPauta, ItemPauta, OpcionRespuesta, TipoRespuesta, categoriaPauta, VersionPauta, ReglaTabulacion
-from .forms import PautaForm, CampoPautaForm, ItemPautaForm, OpcionRespuestaForm, VersionPautaForm, ReglaTabulacionForm
+from core.models import Pauta, CampoPauta, ItemPauta, OpcionRespuesta, TipoRespuesta, categoriaPauta, VersionPauta, ReglaTabulacion, Usuario, membresia, reportes_issues
+from .forms import PautaForm, CampoPautaForm, ItemPautaForm, OpcionRespuestaForm, VersionPautaForm, ReglaTabulacionForm, ReporteIssueForm
 
 
 admin_required = user_passes_test(
@@ -15,6 +16,149 @@ admin_required = user_passes_test(
 def preview_404_view(request):
     # botón provisional para revisar la plantilla 404 personalizada
     return render(request, '404.html', status=404)
+
+
+@admin_required
+def reporte_list_view(request):
+    reportes = reportes_issues.objects.select_related('usuario_reporta', 'pauta').order_by('-fecha_reporte')
+    return render(request, 'reportes_list.html', {
+        'reportes': reportes,
+        'estado_choices': reportes_issues.ESTADO_CHOICES,
+    })
+
+
+@admin_required
+def reporte_update_view(request, reporte_id):
+    reporte = get_object_or_404(reportes_issues, id=reporte_id)
+    if request.method == 'POST':
+        form = ReporteIssueForm(request.POST, instance=reporte)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Reporte actualizado correctamente.')
+        else:
+            messages.error(request, 'No se pudo actualizar el reporte.')
+    return redirect('adminhub_reportes')
+
+
+@admin_required
+def usuario_list_view(request):
+    perfiles = Usuario.objects.select_related('auth_user', 'membresia').order_by('username')
+    return render(request, 'usuarios_list.html', {
+        'perfiles': perfiles,
+        'membresias': membresia.objects.order_by('nombre'),
+    })
+
+
+@admin_required
+def usuario_create_view(request):
+    if request.method == 'POST':
+        username = (request.POST.get('username') or '').strip()
+        run = (request.POST.get('run') or '').strip()
+        email = (request.POST.get('email') or '').strip()
+        password = request.POST.get('password') or ''
+        es_administrador = request.POST.get('es_administrador') == 'on'
+        membresia_id = request.POST.get('membresia') or None
+
+        if not username or not run or not email or not password:
+            messages.error(request, 'Completa todos los campos obligatorios.')
+        elif User.objects.filter(username=username).exists():
+            messages.error(request, 'Ese nombre de usuario ya está registrado.')
+        elif User.objects.filter(email=email).exists():
+            messages.error(request, 'Ese correo ya está registrado.')
+        elif Usuario.objects.filter(run=run).exists():
+            messages.error(request, 'Ese RUT ya está registrado.')
+        else:
+            auth_user = User.objects.create_user(
+                username=username, email=email, password=password, is_staff=es_administrador,
+            )
+            Usuario.objects.create(
+                auth_user=auth_user,
+                username=username,
+                run=run,
+                email=email,
+                rol='admin' if es_administrador else 'terapeuta',
+                membresia_id=membresia_id,
+            )
+            messages.success(request, 'Usuario creado correctamente.')
+    return redirect('adminhub_usuarios')
+
+
+@admin_required
+def usuario_edit_view(request, usuario_id):
+    perfil = get_object_or_404(Usuario.objects.select_related('auth_user'), id=usuario_id)
+    if request.method == 'POST':
+        username = (request.POST.get('username') or '').strip()
+        run = (request.POST.get('run') or '').strip()
+        email = (request.POST.get('email') or '').strip()
+        es_administrador = request.POST.get('es_administrador') == 'on'
+        membresia_id = request.POST.get('membresia') or None
+
+        if not username or not run or not email:
+            messages.error(request, 'Completa todos los campos obligatorios.')
+        elif User.objects.filter(username=username).exclude(pk=perfil.auth_user_id).exists():
+            messages.error(request, 'Ese nombre de usuario ya está en uso.')
+        elif User.objects.filter(email=email).exclude(pk=perfil.auth_user_id).exists():
+            messages.error(request, 'Ese correo ya está en uso.')
+        elif Usuario.objects.filter(run=run).exclude(pk=perfil.id).exists():
+            messages.error(request, 'Ese RUT ya está en uso.')
+        else:
+            perfil.username = username
+            perfil.run = run
+            perfil.email = email
+            perfil.membresia_id = membresia_id
+
+            if perfil.auth_user_id == request.user.id:
+                # un administrador no puede quitarse a sí mismo el permiso de staff
+                messages.warning(request, 'No puedes cambiar tu propio nivel de administrador desde aquí.')
+            else:
+                perfil.rol = 'admin' if es_administrador else 'terapeuta'
+                if perfil.auth_user:
+                    perfil.auth_user.is_staff = es_administrador
+                    perfil.auth_user.save(update_fields=['is_staff'])
+
+            perfil.save()
+
+            if perfil.auth_user:
+                perfil.auth_user.username = username
+                perfil.auth_user.email = email
+                perfil.auth_user.save(update_fields=['username', 'email'])
+
+            messages.success(request, 'Usuario actualizado correctamente.')
+    return redirect('adminhub_usuarios')
+
+
+@admin_required
+def usuario_toggle_active_view(request, usuario_id):
+    perfil = get_object_or_404(Usuario.objects.select_related('auth_user'), id=usuario_id)
+    if request.method == 'POST':
+        if perfil.auth_user_id == request.user.id:
+            messages.error(request, 'No puedes desactivar tu propia cuenta.')
+        elif perfil.auth_user:
+            perfil.auth_user.is_active = not perfil.auth_user.is_active
+            perfil.auth_user.save(update_fields=['is_active'])
+            estado = 'activada' if perfil.auth_user.is_active else 'desactivada'
+            messages.success(request, f'Cuenta {estado} correctamente.')
+        else:
+            messages.error(request, 'Este perfil no tiene una cuenta de acceso vinculada.')
+    return redirect('adminhub_usuarios')
+
+
+@admin_required
+def usuario_reset_password_view(request, usuario_id):
+    perfil = get_object_or_404(Usuario.objects.select_related('auth_user'), id=usuario_id)
+    if request.method == 'POST':
+        password = request.POST.get('password') or ''
+        password_confirmation = request.POST.get('password_confirmation') or ''
+
+        if not password or password != password_confirmation:
+            messages.error(request, 'Las contraseñas no coinciden o están vacías.')
+        elif not perfil.auth_user:
+            messages.error(request, 'Este perfil no tiene una cuenta de acceso vinculada.')
+        else:
+            perfil.auth_user.set_password(password)
+            perfil.auth_user.save(update_fields=['password'])
+            messages.success(request, 'Contraseña actualizada correctamente.')
+    return redirect('adminhub_usuarios')
 
 
 def ensure_default_tipos_respuesta():

@@ -849,9 +849,31 @@ body.admin-layout *::after {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--text);
+    color: #1f2937;
     text-decoration: none;
-    padding: 0.25rem 0.4rem;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 999px;
+    background: #fff;
+    font-weight: 600;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    min-width: 0;
+}
+
+.nav-user-button:hover,
+.nav-user-button:focus,
+.nav-user-button:active,
+.nav-user-button.show {
+    color: #111827;
+    border-color: rgba(74, 124, 89, 0.4);
+    background: #f8fcf9;
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
+}
+
+.nav-user-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px var(--brand-focus), 0 10px 20px rgba(15, 23, 42, 0.12);
 }
 
 .nav-user-avatar {
@@ -865,10 +887,73 @@ body.admin-layout *::after {
     font-weight: 700;
 }
 
+.nav-user-name {
+    max-width: min(34vw, 190px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nav-user-menu {
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    border-radius: 0.8rem;
+    padding: 0.45rem;
+    min-width: 240px;
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
+}
+
+.nav-user-menu .dropdown-item-text,
+.nav-user-menu .dropdown-item {
+    border-radius: 0.6rem;
+    padding: 0.55rem 0.7rem;
+}
+
+.nav-user-menu-title {
+    color: #64748b !important;
+    font-weight: 600;
+}
+
+.nav-user-menu .dropdown-item {
+    color: #1f2937;
+    font-weight: 500;
+}
+
+.nav-user-menu .dropdown-item:hover,
+.nav-user-menu .dropdown-item:focus {
+    color: #123327;
+    background: #edf7f0;
+}
+
+.nav-user-menu .dropdown-divider {
+    margin: 0.45rem 0;
+}
+
 @media (max-width: 991px) {
+    .nav-user-dropdown {
+        width: 100%;
+    }
+
+    .nav-user-button {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .nav-user-name {
+        max-width: none;
+        flex: 1;
+        text-align: left;
+    }
+
     .nav-user-button + .dropdown-menu {
-        max-width: calc(100vw - 2rem);
+        width: 100%;
+        max-width: 100%;
         overflow-x: hidden;
+    }
+}
+
+@media (max-width: 420px) {
+    .nav-user-name {
+        max-width: min(52vw, 180px);
     }
 }
 

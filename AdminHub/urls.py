@@ -4,6 +4,13 @@ from . import views
 urlpatterns = [
     path('', views.dashboard_view, name='adminhub_view'),
     path('preview-404/', views.preview_404_view, name='adminhub_preview_404'),
+    path('usuarios/', views.usuario_list_view, name='adminhub_usuarios'),
+    path('usuarios/crear/', views.usuario_create_view, name='adminhub_usuario_create'),
+    path('usuarios/<int:usuario_id>/editar/', views.usuario_edit_view, name='adminhub_usuario_edit'),
+    path('usuarios/<int:usuario_id>/estado/', views.usuario_toggle_active_view, name='adminhub_usuario_toggle_active'),
+    path('usuarios/<int:usuario_id>/clave/', views.usuario_reset_password_view, name='adminhub_usuario_reset_password'),
+    path('reportes/', views.reporte_list_view, name='adminhub_reportes'),
+    path('reportes/<int:reporte_id>/actualizar/', views.reporte_update_view, name='adminhub_reporte_update'),
     path('pautas/', views.pauta_list_view, name='adminhub_pautas'),
     path('pautas/crear/', views.pauta_create_view, name='adminhub_pauta_create'),
     path('pautas/<int:pauta_id>/', views.pauta_detail_view, name='adminhub_pauta_detail'),
