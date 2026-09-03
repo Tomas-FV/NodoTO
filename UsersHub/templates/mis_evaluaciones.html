@@ -9,32 +9,31 @@
     <p class="text-muted">Aquí solo aparecen las evaluaciones que tú has realizado.</p>
 
     {% if evaluaciones %}
-    <div class="table-responsive mt-4">
-        <table class="table align-middle mis-evaluaciones-table">
-            <thead>
-                <tr>
-                    <th>Pauta</th>
-                    <th>Versión</th>
-                    <th>Participante</th>
-                    <th>Puntaje</th>
-                    <th>Fecha</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for evaluacion in evaluaciones %}
-                <tr>
-                    <td data-label="Pauta"><a href="{% url 'mi_evaluacion_detalle' evaluacion.id %}">{{ evaluacion.pauta.nombre }}</a></td>
-                    <td data-label="Versión">{{ evaluacion.version.nombre|default:'Pauta base' }}</td>
-                    <td data-label="Participante">{{ evaluacion.nombre_participante }}</td>
-                    <td data-label="Puntaje">{{ evaluacion.puntaje_total }}</td>
-                    <td data-label="Fecha">{{ evaluacion.fecha_creacion|date:'d/m/Y H:i' }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="evaluaciones-lista mt-4">
+        {% for evaluacion in evaluaciones %}
+        <a href="{% url 'mi_evaluacion_detalle' evaluacion.id %}" class="evaluacion-card">
+            <div class="evaluacion-card-icono">📋</div>
+            <div class="evaluacion-card-info">
+                <div class="evaluacion-card-titulo">{{ evaluacion.pauta.nombre }}</div>
+                <div class="evaluacion-card-meta">
+                    <span>{{ evaluacion.version.nombre|default:'Pauta base' }}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>{{ evaluacion.nombre_participante }}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>{{ evaluacion.fecha_creacion|date:'d/m/Y H:i' }}</span>
+                </div>
+            </div>
+            <div class="evaluacion-card-puntaje">
+                <span class="evaluacion-card-puntaje-valor">{{ evaluacion.puntaje_total }}</span>
+                <span class="evaluacion-card-puntaje-label">puntos</span>
+            </div>
+            <span class="evaluacion-card-flecha" aria-hidden="true">→</span>
+        </a>
+        {% endfor %}
     </div>
     {% else %}
     <div class="alert alert-info mt-4">Aún no has realizado ninguna evaluación.</div>
     {% endif %}
 </div>
 {% endblock %}
+
