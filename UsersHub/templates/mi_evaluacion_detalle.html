@@ -10,11 +10,16 @@
     <div class="evaluacion-detalle-header">
         <h2 class="evaluacion-detalle-titulo">{{ evaluacion.pauta.nombre }}</h2>
         <p class="evaluacion-detalle-version">{{ evaluacion.version.nombre|default:'Pauta base' }}</p>
-        <div class="evaluacion-detalle-meta">
+        <div class="evaluacion-detalle-meta gap-2 mb-2">
             <span class="evaluacion-meta-pill">Participante: {{ evaluacion.nombre_participante }}</span>
-            <span class="evaluacion-meta-pill">Fecha: {{ evaluacion.fecha_creacion|date:'d/m/Y H:i' }}</span>
+            <span class="evaluacion-meta-pill">Fecha: {{ evaluacion.fecha_creacion|date:'d/m/Y' }}</span>
             <span class="evaluacion-meta-pill evaluacion-meta-pill-destacado">Puntaje total: {{ evaluacion.puntaje_total }}</span>
         </div>
+        {% if evaluacion.observaciones  %}
+        <div class="evaluacion-detalle-meta ">
+            <span class="evaluacion-meta-pill">Observación: {{ evaluacion.observaciones }}</span>
+        </div>
+        {% endif %}
     </div>
 
     {% if resultados_campos %}
@@ -22,7 +27,7 @@
     <div class="d-flex flex-wrap gap-2 mb-4">
         {% for resultado in resultados_campos %}
         <span class="evaluacion-resultado-badge">
-            {{ resultado.campo.nombre|default:'General' }}: {{ resultado.puntaje_obtenido }}{% if resultado.puntaje_maximo %} / {{ resultado.puntaje_maximo }}{% endif %}
+            {{ resultado.campo.nombre|default:'General' }}: {{ resultado.puntaje_obtenido }}{% if resultado.puntaje_maximo %}{% endif %}
             {% if resultado.etiqueta %} · {{ resultado.etiqueta }}{% endif %}
         </span>
         {% endfor %}
