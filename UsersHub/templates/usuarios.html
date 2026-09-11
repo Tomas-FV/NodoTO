@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Usuarios {% endblock %}
+
+{% block content %}
+
+<div class="pautas-wrapper">
+
+    <h2 class="pautas-titulo">Gestión de Usuarios</h2>
+
+    <input id="pautaBuscador" class="pauta-buscador" type="text" placeholder="Buscar por nombre" />
+
+    {% include 'modals/modal_new_usuario.html' %}
+    <button type="button" class="btn-aplicar" data-bs-toggle="modal" data-bs-target="#modalNewUsuario">Nuevo Usuario</button>
+
+    <p id="pautaConteo" class="pautas-conteo">Mostrando {{ pacientes.count }} paciente{{ pacientes.count|pluralize }}</p>
+
+    <div class="pautas-grid">
+        {% for paciente in pacientes %}
+        <div class="pauta-card">
+            <div class="pauta-card-header">
+                <div class="pauta-icono">🦥</div>
+                <div>
+                    <h6 class="pauta-nombre">{{ paciente.nombre }} {{ paciente.apellido }}</h6>
+                    <p class="pauta-subtitulo">{{ paciente.sexo }} - {{ paciente.edad }} años</p>
+                </div>
+            </div>
+            <div class="pauta-acciones">
+                <button type="button" class="btn-aplicar">Ver perfil</button>
+                <!-- <button type="button" class="btn-aplicar">Aplicar ahora</button> -->
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">No hay Usuarios en la lista.</div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<!-- Modal Nuevo Usuario -->
+<div class="modal fade modal-lg" id="modalNewUsuario" tabindex="-1" aria-labelledby="modalNewUsuarioLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="modalNewUsuarioLabel">Agrega un nuevo usuario</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'crear_paciente' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <!-- Nombre -->
+                            <div class="col-sm-3">
+                                <label for="nombre" class="form-label">Nombre</label>
+                                <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Nombre"
+                                    aria-label="Nombre">
+                            </div>
+                            <div class="col-sm-3">
+                                <label for="apellido" class="form-label">Apellido</label>
+                                <input type="text" id="apellido" name="apellido" class="form-control"
+                                    placeholder="Apellido" aria-label="Apellido">
+                            </div>
+                            <!-- Sexo -->
+                            <div class="col-sm-3">
+                                <label for="sexo" class="form-label">Sexo</label>
+                                <select id="sexo" name="sexo" class="form-select" aria-label="Sexo">
+                                    <option selected>---</option>
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Femenino">Femenino</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                            <!-- Edad -->
+                            <div class="col-sm">
+                                <label for="edad" class="form-label">Edad</label>
+                                <input type="text" id="edad" name="edad" class="form-control" placeholder="Edad"
+                                    aria-label="Edad">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <!-- Run -->
+                            <div class="col-sm-4">
+                                <label for="run" class="form-label">Run</label>
+                                <input type="text" id="run" name="run" class="form-control" placeholder="Run"
+                                    aria-label="Run">
+                            </div>
+                            <!-- Prevision -->
+                            <div class="col-sm-2">
+                                <label for="prevision" class="form-label">Previsión</label>
+                                <select id="prevision" name="prevision" class="form-select" aria-label="Previsión">
+                                    <option selected>---</option>
+                                    <option value="Fonasa">Fonasa</option>
+                                    <option value="Isapre">Isapre</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                            <!-- Telefono -->
+                            <div class="col-sm">
+                                <label for="telefono" class="form-label">Telefono</label>
+                                <input type="text" id="telefono" name="telefono" class="form-control"
+                                    placeholder="Telefono (+569)" aria-label="Telefono">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3 mb-4">
+                            <!-- Anamnesis -->
+                            <div class="col-sm">
+                                <label for="anamnesis" class="form-label">Anamnesis</label>
+                                <textarea id="anamnesis" name="anamnesis" class="form-control" placeholder="Anamnesis"
+                                    aria-label="Anamnesis"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-primary">Agregar</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

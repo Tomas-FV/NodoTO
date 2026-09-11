@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from core.models import Pauta, Evaluacion, RespuestaEvaluacion, ResultadoCampo, ReglaTabulacion, reportes_issues
+from core.models import Paciente, Pauta, Evaluacion, RespuestaEvaluacion, ResultadoCampo, ReglaTabulacion, Usuario, reportes_issues
 
 
 @login_required
@@ -255,3 +255,34 @@ def mis_reportes_view(request):
     # cada usuario solo ve los reportes que él mismo envió
     reportes = reportes_issues.objects.filter(usuario_reporta=request.user).order_by('-fecha_reporte')
     return render(request, 'mis_reportes.html', {'reportes': reportes})
+
+def usuarios_view(request):
+    pacientes = Paciente.objects.filter(terapeuta=request.user)
+    return render(request, 'usuarios.html', {'pacientes': pacientes})
+
+@login_required
+def crear_paciente(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        apellido = request.POST.get('apellido')
+        sexo = request.POST.get('sexo')
+        edad = request.POST.get('edad')
+        run = request.POST.get('run')
+        prevision = request.POST.get('prevision')
+        telefono = request.POST.get('telefono')
+        anamnesis = request.POST.get('anamnesis')
+        
+        Paciente.objects.create(
+            terapeuta=request.user,
+            nombre=nombre,
+            apellido=apellido,
+            sexo=sexo,
+            edad=edad,
+            run=run,
+            telefono=telefono,
+            prevision=prevision,
+            diagnostico=anamnesis,
+        )
+        messages.success(request, f'Paciente {nombre} {apellido} creado correctamente.')
+        return redirect(reverse('usuarios'))
+    return render(request, 'usuarios.html') 
