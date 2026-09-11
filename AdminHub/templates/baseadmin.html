@@ -48,10 +48,15 @@
                 <span class="sidebar-workspace-icon" aria-hidden="true">↗</span>
                 <span>
                     <strong>Vista del Usuario</strong>
-                    <small>Ir a evaluación</small>
+                </span>
+            </a>
+            <a class="sidebar-workspace-button" href="{% url 'admin:index' %}">
+                <span>
+                    <strong>Administración de Django</strong>
                 </span>
             </a>
             <a class="sidebar-link" href="{% url 'adminhub_preview_404' %}">Ver página 404 (provisional)</a>
+            <a class="sidebar-link gap-4 mb-4" href="{% url 'logout' %}">Cerrar sesión</a>
             <small>© 2026 NodoTO</small>
         </div>
     </aside>

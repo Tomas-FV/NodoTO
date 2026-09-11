@@ -21,11 +21,14 @@ class Usuario(models.Model):
         return self.username
 
 class Paciente(models.Model):
-    terapeuta = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='pacientes')
+    terapeuta = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='pacientes')
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
     run = models.CharField(max_length=12, unique=True)
-    diagnostico = models.CharField(max_length=150)
+    edad = models.CharField(max_length=3, null=True, blank=True)
+    sexo = models.CharField(max_length=15, null=True, blank=True)
+    prevision = models.CharField(max_length=100, null=True, blank=True)
+    diagnostico = models.TextField(blank=True)
     telefono = models.CharField(max_length=15)
 
     def __str__(self):
@@ -174,7 +177,6 @@ class OpcionRespuesta(models.Model):
 
 class Evaluacion(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='evaluaciones', null=True, blank=True)
-    terapeuta = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='evaluaciones_realizadas', null=True, blank=True)
     pauta = models.ForeignKey(Pauta, on_delete=models.CASCADE, related_name='evaluaciones')
     version = models.ForeignKey(VersionPauta, on_delete=models.SET_NULL, null=True, blank=True, related_name='evaluaciones')
     paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE, null=True, blank=True, related_name='evaluaciones')
